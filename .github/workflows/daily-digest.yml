@@ -1,0 +1,38 @@
+name: Ashcombe Daily News Digest
+
+on:
+  schedule:
+    - cron: '0 7 * * 1-5'  # 7am UTC Mon-Fri = 8am BST (summer) / 7am GMT (winter)
+  workflow_dispatch:         # Allow manual trigger from GitHub UI
+
+jobs:
+  run-tracker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tracker
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+        run: python tracker.py
+
+      - name: Save updated state
+        run: |
+          git config user.name "Ashcombe Tracker"
+          git config user.email "tracker@ashcombeadvisers.com"
+          git add state.json
+          git diff --staged --quiet || git commit -m "chore: update tracker state"
+          git push
