@@ -1,0 +1,8 @@
+.env
+.venv/
+__pycache__/
+state.json
+tracker.log
+digest_preview.html
+send_test.py
+.DS_Store

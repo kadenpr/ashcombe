@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ashcombe Advisers — AI News Tracker</title>
+  <!--[if mso]>
+  <noscript>
+    <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+  </noscript>
+  <![endif]-->
+  <style>
+    /* Reset */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f4f6f9; font-family: Arial, Helvetica, sans-serif; font-size: 15px; color: #1a1a2e; }
+
+    /* Wrapper */
+    .email-wrapper { width: 100%; background: #f4f6f9; padding: 32px 16px; }
+    .email-body    { max-width: 640px; margin: 0 auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+
+    /* Header */
+    .header { background: #0d1b3e; padding: 28px 32px; }
+    .header-logo { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #7fa8d4; margin-bottom: 6px; }
+    .header-title { font-size: 22px; font-weight: 700; color: #ffffff; }
+    .header-date  { font-size: 13px; color: #a0bcd8; margin-top: 6px; }
+
+    /* Body padding */
+    .body-pad { padding: 28px 32px; }
+
+    /* Company section */
+    .company-section { margin-bottom: 28px; }
+    .company-heading {
+      font-size: 16px; font-weight: 700; color: #0d1b3e;
+      border-left: 4px solid #1a6dc5; padding-left: 10px;
+      margin-bottom: 12px;
+    }
+
+    /* News item */
+    .news-item { padding: 10px 0; border-bottom: 1px solid #eef0f4; }
+    .news-item:last-child { border-bottom: none; }
+    .news-summary { font-size: 14px; color: #1a1a2e; line-height: 1.5; margin-bottom: 5px; }
+    .news-meta { font-size: 12px; color: #6b7280; }
+    .news-meta a { color: #1a6dc5; text-decoration: none; }
+    .news-meta a:hover { text-decoration: underline; }
+
+    /* Category tag */
+    .tag {
+      display: inline-block;
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+      padding: 2px 7px; border-radius: 3px; margin-left: 6px;
+      vertical-align: middle;
+    }
+    .tag-contract_win      { background: #dcfce7; color: #166534; }
+    .tag-senior_hire       { background: #dbeafe; color: #1e40af; }
+    .tag-funding_ma        { background: #fef9c3; color: #854d0e; }
+    .tag-product_launch    { background: #ede9fe; color: #5b21b6; }
+    .tag-partnership       { background: #ffedd5; color: #9a3412; }
+    .tag-event             { background: #f1f5f9; color: #334155; }
+    .tag-financial_results { background: #fce7f3; color: #9d174d; }
+    .tag-default           { background: #f1f5f9; color: #334155; }
+
+    /* Divider */
+    .divider { border: none; border-top: 1px solid #eef0f4; margin: 24px 0; }
+
+    /* Footer */
+    .footer { background: #f8fafc; border-top: 1px solid #eef0f4; padding: 20px 32px; }
+    .footer-facts { font-size: 12px; color: #6b7280; line-height: 1.7; }
+    .footer-brand { font-size: 11px; color: #9ca3af; margin-top: 10px; }
+  </style>
+</head>
+<body>
+<div class="email-wrapper">
+  <div class="email-body">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-logo">Ashcombe Advisers</div>
+      <div class="header-title">AI News Tracker</div>
+      <div class="header-date">{{ run_date }}</div>
+    </div>
+
+    <!-- BODY -->
+    <div class="body-pad">
+
+      {% for company_name, items in companies.items() %}
+      <div class="company-section">
+        <div class="company-heading">{{ company_name }}</div>
+        {% for item in items %}
+        <div class="news-item">
+          <div class="news-summary">{{ item.summary }}</div>
+          <div class="news-meta">
+            {{ item.source }}
+            &nbsp;·&nbsp;{{ item.published }}
+            <span class="tag tag-{{ item.category }}">{{ item.category | replace('_', ' ') }}</span>
+            &nbsp;·&nbsp;<a href="{{ item.url }}" target="_blank">Read article &rarr;</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% if not loop.last %}
+      <hr class="divider" />
+      {% endif %}
+      {% endfor %}
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <div class="footer-facts">
+        <strong>Tracker Facts</strong><br />
+        {{ n_companies }} companies monitored &nbsp;·&nbsp;
+        {{ n_items }} relevant items found &nbsp;·&nbsp;
+        Run at {{ run_time }} UK time
+      </div>
+      <div class="footer-brand">
+        Powered by Anthropic Claude &amp; Ashcombe Advisers internal tooling.
+        This digest is generated automatically — please do not reply to this email.
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
