@@ -12,43 +12,74 @@
   <style>
     /* Reset */
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #f4f6f9; font-family: Arial, Helvetica, sans-serif; font-size: 15px; color: #1a1a2e; }
+    body { background: #eef1f6; font-family: Arial, Helvetica, sans-serif; font-size: 15px; color: #1a1a2e; }
 
     /* Wrapper */
-    .email-wrapper { width: 100%; background: #f4f6f9; padding: 32px 16px; }
-    .email-body    { max-width: 640px; margin: 0 auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .email-wrapper { width: 100%; background: #eef1f6; padding: 32px 16px; }
+    .email-body    { max-width: 640px; margin: 0 auto; background: #f4f6f9; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,.10); }
 
-    /* Header */
-    .header { background: #0d1b3e; padding: 28px 32px; }
-    .header-logo { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #7fa8d4; margin-bottom: 6px; }
-    .header-title { font-size: 22px; font-weight: 700; color: #ffffff; }
-    .header-date  { font-size: 13px; color: #a0bcd8; margin-top: 6px; }
+    /* ── HEADER ────────────────────────────────────────────── */
+    .header { background: #0b1730; padding: 28px 32px 20px; }
+    .header-eyebrow { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: #6b9fd4; margin-bottom: 5px; }
+    .header-title   { font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: -.3px; }
+    .header-date    { font-size: 13px; color: #8aafd6; margin-top: 5px; }
 
-    /* Body padding */
-    .body-pad { padding: 28px 32px; }
-
-    /* Company section */
-    .company-section { margin-bottom: 28px; }
-    .company-heading {
-      font-size: 16px; font-weight: 700; color: #0d1b3e;
-      border-left: 4px solid #1a6dc5; padding-left: 10px;
-      margin-bottom: 12px;
+    /* Stats bar */
+    .stats-bar { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.08); }
+    .stat-pill {
+      display: inline-block;
+      font-size: 11px; font-weight: 600;
+      padding: 4px 11px; border-radius: 20px; margin: 3px 4px 3px 0;
+      background: rgba(255,255,255,.10); color: #c8ddf5;
     }
+    .stat-pill-highlight { background: rgba(255,255,255,.20); color: #ffffff; }
+    .stat-pill-hire    { background: rgba(59,130,246,.25);  color: #93c5fd; }
+    .stat-pill-contract{ background: rgba(34,197,94,.20);   color: #86efac; }
+    .stat-pill-funding { background: rgba(234,179,8,.20);   color: #fde047; }
+    .stat-pill-weekly  { background: rgba(168,85,247,.20);  color: #d8b4fe; }
+
+    /* ── BODY ──────────────────────────────────────────────── */
+    .body-pad { padding: 24px 24px 28px; }
+
+    /* Executive summary */
+    .summary-box { background: #ffffff; border-left: 4px solid #1a6dc5; border-radius: 6px; padding: 14px 18px; margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .summary-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #1a6dc5; margin-bottom: 7px; }
+    .summary-text  { font-size: 14px; color: #1a1a2e; line-height: 1.7; }
+
+    /* ── COMPANY CARDS ─────────────────────────────────────── */
+    .company-card { background: #ffffff; border-radius: 8px; overflow: hidden; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.07); border: 1px solid #e4e8f0; }
+
+    /* Coloured top border by owner category */
+    .card-clients   { border-top: 3px solid #1a6dc5; }
+    .card-targets   { border-top: 3px solid #7c3aed; }
+    .card-ptt       { border-top: 3px solid #d97706; }
+    .card-investors { border-top: 3px solid #059669; }
+    .card-default   { border-top: 3px solid #64748b; }
+
+    .card-header { padding: 11px 16px; background: #f8fafc; border-bottom: 1px solid #eef0f6; overflow: hidden; }
+    .card-company-name { font-size: 14px; font-weight: 700; color: #0d1b3e; }
+    .owner-badge { float: right; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; padding: 2px 9px; border-radius: 10px; margin-top: 1px; }
+    .owner-clients   { background: #dbeafe; color: #1e40af; }
+    .owner-targets   { background: #ede9fe; color: #5b21b6; }
+    .owner-ptt       { background: #fef3c7; color: #92400e; }
+    .owner-investors { background: #d1fae5; color: #065f46; }
+    .owner-default   { background: #f1f5f9; color: #475569; }
+
+    .card-body { padding: 4px 16px 4px; }
 
     /* News item */
-    .news-item { padding: 10px 0; border-bottom: 1px solid #eef0f4; }
+    .news-item { padding: 10px 0; border-bottom: 1px solid #f1f4f9; }
     .news-item:last-child { border-bottom: none; }
-    .news-summary { font-size: 14px; color: #1a1a2e; line-height: 1.5; margin-bottom: 5px; }
-    .news-meta { font-size: 12px; color: #6b7280; }
+    .news-summary { font-size: 13.5px; color: #1a1a2e; line-height: 1.55; margin-bottom: 5px; }
+    .news-meta { font-size: 11.5px; color: #6b7280; }
     .news-meta a { color: #1a6dc5; text-decoration: none; }
     .news-meta a:hover { text-decoration: underline; }
 
-    /* Category tag */
+    /* Category tags */
     .tag {
       display: inline-block;
-      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
-      padding: 2px 7px; border-radius: 3px; margin-left: 6px;
-      vertical-align: middle;
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+      padding: 2px 7px; border-radius: 3px; margin-left: 5px; vertical-align: middle;
     }
     .tag-contract_win      { background: #dcfce7; color: #166534; }
     .tag-senior_hire       { background: #dbeafe; color: #1e40af; }
@@ -57,15 +88,43 @@
     .tag-partnership       { background: #ffedd5; color: #9a3412; }
     .tag-event             { background: #f1f5f9; color: #334155; }
     .tag-financial_results { background: #fce7f3; color: #9d174d; }
+    .tag-company_update    { background: #e0f2fe; color: #075985; }
+    .tag-media_coverage    { background: #ecfdf5; color: #065f46; }
     .tag-default           { background: #f1f5f9; color: #334155; }
 
-    /* Divider */
-    .divider { border: none; border-top: 1px solid #eef0f4; margin: 24px 0; }
+    /* ── SECTION HEADERS (Jobs / Profiles) ─────────────────── */
+    .section-banner { background: #0d1b3e; color: #ffffff; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; padding: 9px 16px; border-radius: 6px 6px 0 0; margin-top: 22px; }
+    .section-inner  { background: #ffffff; border: 1px solid #e4e8f0; border-top: none; border-radius: 0 0 8px 8px; padding: 16px; }
 
-    /* Footer */
-    .footer { background: #f8fafc; border-top: 1px solid #eef0f4; padding: 20px 32px; }
-    .footer-facts { font-size: 12px; color: #6b7280; line-height: 1.7; }
-    .footer-brand { font-size: 11px; color: #9ca3af; margin-top: 10px; }
+    /* Hiring activity */
+    .jobs-change { margin-bottom: 18px; }
+    .jobs-change:last-child { margin-bottom: 0; }
+    .jobs-change-company { font-size: 14px; font-weight: 700; color: #0d1b3e; margin-bottom: 5px; }
+    .jobs-delta-up   { color: #166534; font-weight: 700; }
+    .jobs-delta-down { color: #9a3412; font-weight: 700; }
+    .jobs-delta-flat { color: #6b7280; font-weight: 700; }
+    .jobs-meta { font-size: 13px; color: #374151; margin-bottom: 4px; }
+    .jobs-senior { margin-top: 7px; }
+    .jobs-senior-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #9ca3af; margin-bottom: 4px; }
+    .jobs-senior-role  { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 11.5px; padding: 2px 8px; border-radius: 3px; margin: 2px 4px 2px 0; }
+    .jobs-evaluation   { margin-top: 9px; font-size: 13px; color: #374151; background: #f8fafc; border-left: 3px solid #1a6dc5; padding: 8px 10px; border-radius: 2px; line-height: 1.5; }
+    .jobs-divider { border: none; border-top: 1px solid #f1f4f9; margin: 14px 0; }
+
+    /* Profile changes */
+    .profile-change { margin-bottom: 18px; }
+    .profile-change:last-child { margin-bottom: 0; }
+    .profile-change-company { font-size: 14px; font-weight: 700; color: #0d1b3e; margin-bottom: 8px; }
+    .tag-profile-field { background: #e0f2fe; color: #075985; }
+    .profile-label    { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #9ca3af; margin-bottom: 3px; margin-top: 8px; }
+    .profile-text-old { background: #fef2f2; border-left: 3px solid #fca5a5; padding: 7px 10px; font-size: 13px; color: #374151; border-radius: 2px; line-height: 1.5; }
+    .profile-text-new { background: #f0fdf4; border-left: 3px solid #86efac; padding: 7px 10px; font-size: 13px; color: #374151; border-radius: 2px; line-height: 1.5; }
+    .profile-evaluation { margin-top: 9px; font-size: 13px; color: #374151; background: #f8fafc; border-left: 3px solid #1a6dc5; padding: 8px 10px; border-radius: 2px; line-height: 1.5; }
+    .profile-divider { border: none; border-top: 1px solid #f1f4f9; margin: 14px 0; }
+
+    /* ── FOOTER ────────────────────────────────────────────── */
+    .footer { background: #e8ecf3; border-top: 1px solid #dde2ec; padding: 18px 32px; }
+    .footer-facts { font-size: 11.5px; color: #6b7280; line-height: 1.8; }
+    .footer-brand { font-size: 11px; color: #9ca3af; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -74,44 +133,131 @@
 
     <!-- HEADER -->
     <div class="header">
-      <div class="header-logo">Ashcombe Advisers</div>
+      <div class="header-eyebrow">Ashcombe Advisers</div>
       <div class="header-title">AI News Tracker</div>
       <div class="header-date">{{ run_date }}</div>
+
+      <!-- Stats bar (B) -->
+      <div class="stats-bar">
+        <span class="stat-pill stat-pill-highlight">{{ n_items }} item{{ 's' if n_items != 1 }}</span>
+        <span class="stat-pill">{{ n_companies }} company{{ 'ies' if n_companies != 1 else 'y' }}</span>
+        {% if category_counts.get('senior_hire', 0) > 0 %}
+        <span class="stat-pill stat-pill-hire">{{ category_counts['senior_hire'] }} senior hire{{ 's' if category_counts['senior_hire'] != 1 }}</span>
+        {% endif %}
+        {% if category_counts.get('contract_win', 0) > 0 %}
+        <span class="stat-pill stat-pill-contract">{{ category_counts['contract_win'] }} contract win{{ 's' if category_counts['contract_win'] != 1 }}</span>
+        {% endif %}
+        {% if category_counts.get('funding_ma', 0) > 0 %}
+        <span class="stat-pill stat-pill-funding">{{ category_counts['funding_ma'] }} funding / M&amp;A</span>
+        {% endif %}
+        {% if jobs_changes %}
+        <span class="stat-pill stat-pill-weekly">{{ jobs_changes | length }} hiring change{{ 's' if jobs_changes | length != 1 }}</span>
+        {% endif %}
+        {% if profile_changes %}
+        <span class="stat-pill stat-pill-weekly">{{ profile_changes | length }} profile change{{ 's' if profile_changes | length != 1 }}</span>
+        {% endif %}
+      </div>
     </div>
 
     <!-- BODY -->
     <div class="body-pad">
 
+      <!-- Executive summary -->
+      {% if digest_summary %}
+      <div class="summary-box">
+        <div class="summary-label">Intelligence Summary</div>
+        <div class="summary-text">{{ digest_summary }}</div>
+      </div>
+      {% endif %}
+
+      <!-- Company cards (A) -->
       {% for company_name, items in companies.items() %}
-      <div class="company-section">
-        <div class="company-heading">{{ company_name }}</div>
-        {% for item in items %}
-        <div class="news-item">
-          <div class="news-summary">{{ item.summary }}</div>
-          <div class="news-meta">
-            {{ item.source }}
-            &nbsp;·&nbsp;{{ item.published }}
-            <span class="tag tag-{{ item.category }}">{{ item.category | replace('_', ' ') }}</span>
-            &nbsp;·&nbsp;<a href="{{ item.url }}" target="_blank">Read article &rarr;</a>
-          </div>
+      {% set owner = company_owners.get(company_name, '') %}
+      {% set owner_key = owner.lower().replace(' ', '-') if owner else 'default' %}
+      <div class="company-card card-{{ owner_key }}">
+        <div class="card-header">
+          <span class="owner-badge owner-{{ owner_key }}">{{ owner if owner else 'Other' }}</span>
+          <span class="card-company-name">{{ company_name }}</span>
         </div>
+        <div class="card-body">
+          {% for item in items %}
+          <div class="news-item">
+            <div class="news-summary">{{ item.summary }}</div>
+            <div class="news-meta">
+              {{ item.source }}
+              &nbsp;·&nbsp;{{ item.published }}
+              <span class="tag tag-{{ item.category }}">{{ item.category | replace('_', ' ') }}</span>
+              &nbsp;·&nbsp;<a href="{{ item.url }}" target="_blank">Read &rarr;</a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+
+      <!-- Hiring Activity -->
+      {% if jobs_changes %}
+      <div class="section-banner">Hiring Activity</div>
+      <div class="section-inner">
+        {% for change in jobs_changes %}
+        <div class="jobs-change">
+          <div class="jobs-change-company">{{ change.company }}</div>
+          <div class="jobs-meta">
+            Open positions: <strong>{{ change.current.total }}</strong>
+            {% set delta = change.current.total - change.previous.total %}
+            {% if delta > 0 %}<span class="jobs-delta-up">&nbsp;(+{{ delta }} since last week)</span>
+            {% elif delta < 0 %}<span class="jobs-delta-down">&nbsp;({{ delta }} since last week)</span>
+            {% else %}<span class="jobs-delta-flat">&nbsp;(unchanged)</span>{% endif %}
+            &nbsp;·&nbsp;{% for fn, n in change.current.functions.items() %}{{ fn }}&nbsp;{{ n }}{% if not loop.last %},&nbsp;{% endif %}{% endfor %}
+          </div>
+          {% if change.new_senior_roles %}
+          <div class="jobs-senior">
+            <div class="jobs-senior-label">New senior roles</div>
+            {% for role in change.new_senior_roles %}<span class="jobs-senior-role">{{ role }}</span>{% endfor %}
+          </div>
+          {% endif %}
+          {% if change.evaluation %}
+          <div class="jobs-evaluation"><strong>Strategic significance:</strong> {{ change.evaluation }}</div>
+          {% endif %}
+        </div>
+        {% if not loop.last %}<hr class="jobs-divider" />{% endif %}
         {% endfor %}
       </div>
-
-      {% if not loop.last %}
-      <hr class="divider" />
       {% endif %}
-      {% endfor %}
+
+      <!-- Company Profile Changes -->
+      {% if profile_changes %}
+      <div class="section-banner">Company Profile Changes</div>
+      <div class="section-inner">
+        {% for change in profile_changes %}
+        <div class="profile-change">
+          <div class="profile-change-company">
+            {{ change.company }}
+            <span class="tag tag-profile-field">{{ change.field }}</span>
+          </div>
+          <div class="profile-label">Previously</div>
+          <div class="profile-text-old">{{ change.old_value }}</div>
+          <div class="profile-label">Updated to</div>
+          <div class="profile-text-new">{{ change.new_value }}</div>
+          {% if change.evaluation %}
+          <div class="profile-evaluation"><strong>Strategic significance:</strong> {{ change.evaluation }}</div>
+          {% endif %}
+        </div>
+        {% if not loop.last %}<hr class="profile-divider" />{% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
 
     </div>
 
     <!-- FOOTER -->
     <div class="footer">
       <div class="footer-facts">
-        <strong>Tracker Facts</strong><br />
+        <strong>Tracker run:</strong> {{ run_time }} UK time &nbsp;·&nbsp;
         {{ n_companies }} companies monitored &nbsp;·&nbsp;
-        {{ n_items }} relevant items found &nbsp;·&nbsp;
-        Run at {{ run_time }} UK time
+        {{ n_items }} relevant items
+        {% if jobs_changes %}&nbsp;·&nbsp;{{ jobs_changes | length }} hiring change{{ 's' if jobs_changes | length != 1 }}{% endif %}
+        {% if profile_changes %}&nbsp;·&nbsp;{{ profile_changes | length }} profile change{{ 's' if profile_changes | length != 1 }}{% endif %}
       </div>
       <div class="footer-brand">
         Powered by Anthropic Claude &amp; Ashcombe Advisers internal tooling.

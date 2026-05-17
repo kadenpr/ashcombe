@@ -31,11 +31,17 @@ def _render_html(
     companies: dict[str, list[dict]],
     run_dt: datetime,
     template_dir: str = ".",
+    profile_changes: list | None = None,
+    jobs_changes: list | None = None,
+    digest_summary: str = "",
+    company_owners: dict | None = None,
 ) -> str:
     """
     Render the Jinja2 HTML template, then inline all CSS via premailer
     so styles survive webmail clients that strip <style> blocks.
     """
+    from collections import Counter
+
     env = Environment(
         loader=FileSystemLoader(template_dir),
         autoescape=select_autoescape(["html"]),
@@ -46,12 +52,22 @@ def _render_html(
     n_companies = len(companies)
     n_items = sum(len(v) for v in companies.values())
 
+    all_items_flat = [item for items in companies.values() for item in items]
+    category_counts: dict[str, int] = dict(
+        Counter(item.get("category", "") for item in all_items_flat)
+    )
+
     raw_html = template.render(
         companies=companies,
         run_date=run_dt_uk.strftime("%A %d %B %Y"),
         run_time=run_dt_uk.strftime("%H:%M"),
         n_companies=n_companies,
         n_items=n_items,
+        profile_changes=profile_changes or [],
+        jobs_changes=jobs_changes or [],
+        digest_summary=digest_summary,
+        company_owners=company_owners or {},
+        category_counts=category_counts,
     )
 
     # Inline CSS for maximum email client compatibility
@@ -142,6 +158,10 @@ def send_digest(
     run_dt: Optional[datetime] = None,
     dry_run: bool = False,
     template_dir: str = ".",
+    profile_changes: list | None = None,
+    jobs_changes: list | None = None,
+    digest_summary: str = "",
+    company_owners: dict | None = None,
 ) -> str:
     """
     Render the digest and (unless dry_run) send it.
@@ -154,7 +174,14 @@ def send_digest(
     if run_dt is None:
         run_dt = datetime.now(timezone.utc)
 
-    html = _render_html(companies, run_dt, template_dir=template_dir)
+    html = _render_html(
+        companies, run_dt,
+        template_dir=template_dir,
+        profile_changes=profile_changes,
+        jobs_changes=jobs_changes,
+        digest_summary=digest_summary,
+        company_owners=company_owners,
+    )
 
     run_dt_uk = run_dt.astimezone(UK_TZ)
     subject = f"Ashcombe News Digest — {run_dt_uk.strftime('%d %b %Y')}"

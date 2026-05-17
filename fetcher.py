@@ -48,6 +48,9 @@ REQUEST_DELAY = 1.0
 # Cap per company to keep Claude costs down
 MAX_ITEMS_PER_COMPANY = 5
 
+# Hard ceiling: never include articles older than this, even if re-indexed by Google News
+MAX_ARTICLE_AGE_DAYS = 7
+
 
 @dataclass
 class NewsItem:
@@ -110,6 +113,12 @@ def fetch_company_news(
             continue
 
         if published <= since:
+            continue
+
+        # Reject articles older than MAX_ARTICLE_AGE_DAYS regardless of RSS date
+        age = datetime.now(timezone.utc) - published
+        if age.days >= MAX_ARTICLE_AGE_DAYS:
+            logger.debug("Skipping article older than %d days: %s", MAX_ARTICLE_AGE_DAYS, entry.get("title"))
             continue
 
         title = entry.get("title", "").strip()

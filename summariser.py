@@ -35,12 +35,16 @@ RELEVANT categories (only these qualify):
   - partnership       : strategic alliances, joint ventures, teaming agreements
   - event             : keynote speeches, awards, major conference participation
   - financial_results : earnings releases, profit warnings, revenue announcements
+  - company_update    : substantive company announcements, strategic initiatives, \
+expansion plans, new market entry, restructuring, notable operational milestones, \
+or company-authored LinkedIn posts that reveal meaningful business activity
+  - media_coverage    : notable company interviews, profiles, rankings, or features \
+in sector-relevant media that shed light on strategy or performance
 
 NOT RELEVANT (suppress these):
   - Articles where the company is only briefly mentioned alongside many others
-  - Generic industry commentary or opinion pieces that don't report a specific event
-  - Sponsored content or press release syndication with no editorial value
   - Stock price moves without an underlying business event
+  - Generic motivational posts, job adverts, or team social content on LinkedIn
 
 DEDUPLICATION — if two or more items cover the same underlying story or event, \
 mark only the single most informative one as relevant and mark the rest as not relevant.
@@ -68,6 +72,33 @@ Apply the criteria strictly.
 
 # Default model — swap to claude-opus-4-6 for higher accuracy if budget allows
 DEFAULT_MODEL = "claude-haiku-4-5-20251001"
+
+DIGEST_SUMMARY_PROMPT = """\
+You are a senior business intelligence analyst at Ashcombe Advisers. \
+Write the opening summary for an internal intelligence digest. \
+Be specific: name companies and describe what happened. Avoid vague language.
+
+Output a single JSON object — no markdown, no extra prose:
+{"summary": "<3-5 sentences, active voice, present tense>"}
+"""
+
+JOBS_EVAL_SYSTEM_PROMPT = """\
+You are a senior business intelligence analyst at Ashcombe Advisers. \
+A company's LinkedIn job posting data has changed. Evaluate what this signals \
+about the company's strategic direction, growth trajectory, or operational priorities.
+
+Output a single JSON object — no markdown, no extra prose:
+{"evaluation": "<2-3 sentences, active voice, present tense, concrete and specific>"}
+"""
+
+PROFILE_EVAL_SYSTEM_PROMPT = """\
+You are a senior business intelligence analyst at Ashcombe Advisers. \
+A company has updated its LinkedIn profile. Evaluate what this change signals about \
+the company's strategy, direction, or positioning.
+
+Output a single JSON object — no markdown, no extra prose:
+{"evaluation": "<2-3 sentences, active voice, present tense, concrete and specific>"}
+"""
 
 
 @dataclass
@@ -214,6 +245,152 @@ class Summariser:
                 results[idx] = (items[idx], result)
 
         return results  # type: ignore[return-value]
+
+    def generate_digest_summary(
+        self,
+        digest: dict[str, list[dict]],
+        profile_changes: list,
+        jobs_changes: list,
+        is_monday: bool,
+    ) -> str:
+        """
+        Generate a 3-5 sentence executive summary of the full digest.
+        Returns an empty string on failure (summary box is omitted from email).
+        """
+        lines: list[str] = []
+        period = "this week" if is_monday else "today"
+
+        n_news = sum(len(v) for v in digest.values())
+        lines.append(
+            f"Period: {period}. "
+            f"{len(digest)} company/companies with relevant news ({n_news} item(s) total)."
+        )
+
+        if digest:
+            lines.append("News highlights:")
+            for company, items in digest.items():
+                for item in items:
+                    lines.append(
+                        f"  - {company}: {item['summary']} [{item['category']}]"
+                    )
+
+        if profile_changes:
+            lines.append("Company profile changes:")
+            for c in profile_changes:
+                lines.append(f"  - {c.company}: {c.field} updated")
+
+        if jobs_changes:
+            lines.append("Hiring activity changes:")
+            for c in jobs_changes:
+                delta = c.current.total - c.previous.total
+                senior_note = (
+                    f", new senior roles: {', '.join(c.new_senior_roles[:3])}"
+                    if c.new_senior_roles
+                    else ""
+                )
+                lines.append(
+                    f"  - {c.company}: {c.current.total} open roles ({delta:+d}){senior_note}"
+                )
+
+        user_content = "\n".join(lines)
+
+        try:
+            response = self._client.messages.create(
+                model=self._model,
+                max_tokens=256,
+                system=[
+                    {
+                        "type": "text",
+                        "text": DIGEST_SUMMARY_PROMPT,
+                        "cache_control": {"type": "ephemeral"},
+                    }
+                ],
+                messages=[{"role": "user", "content": user_content}],
+            )
+            raw = re.sub(r"```(?:json)?", "", response.content[0].text).strip()
+            data = json.loads(raw)
+            return str(data.get("summary", "")).strip()
+        except Exception as exc:
+            logger.error("Digest summary generation failed: %s", exc)
+            return ""
+
+    def evaluate_jobs_change(
+        self,
+        company: str,
+        current_total: int,
+        previous_total: int,
+        new_senior_roles: list[str],
+        top_functions: dict[str, int],
+    ) -> str:
+        """Return a 2-3 sentence strategic evaluation of a jobs snapshot change."""
+        functions_text = ", ".join(
+            f"{fn} ({n})" for fn, n in top_functions.items()
+        ) or "unknown"
+        senior_text = (
+            "\n".join(f"  - {r}" for r in new_senior_roles)
+            if new_senior_roles
+            else "none"
+        )
+        user_content = (
+            f"Company: {company}\n"
+            f"Previous open positions: {previous_total}\n"
+            f"Current open positions: {current_total} ({current_total - previous_total:+d})\n"
+            f"New senior roles posted:\n{senior_text}\n"
+            f"Current hiring by function: {functions_text}"
+        )
+        try:
+            response = self._client.messages.create(
+                model=self._model,
+                max_tokens=256,
+                system=[
+                    {
+                        "type": "text",
+                        "text": JOBS_EVAL_SYSTEM_PROMPT,
+                        "cache_control": {"type": "ephemeral"},
+                    }
+                ],
+                messages=[{"role": "user", "content": user_content}],
+            )
+            raw = re.sub(r"```(?:json)?", "", response.content[0].text).strip()
+            data = json.loads(raw)
+            return str(data.get("evaluation", "")).strip()
+        except Exception as exc:
+            logger.error("Jobs evaluation error for %s: %s", company, exc)
+            return ""
+
+    def evaluate_profile_change(
+        self,
+        company: str,
+        field: str,
+        old_value: str,
+        new_value: str,
+    ) -> str:
+        """Return a 2-3 sentence strategic evaluation of a LinkedIn profile change."""
+        user_content = (
+            f"Company: {company}\n"
+            f"Changed field: {field}\n\n"
+            f"Previous text:\n{old_value}\n\n"
+            f"New text:\n{new_value}"
+        )
+        try:
+            response = self._client.messages.create(
+                model=self._model,
+                max_tokens=256,
+                system=[
+                    {
+                        "type": "text",
+                        "text": PROFILE_EVAL_SYSTEM_PROMPT,
+                        "cache_control": {"type": "ephemeral"},
+                    }
+                ],
+                messages=[{"role": "user", "content": user_content}],
+            )
+            raw = re.sub(r"```(?:json)?", "", response.content[0].text).strip()
+            data = json.loads(raw)
+            return str(data.get("evaluation", "")).strip()
+        except Exception as exc:
+            logger.error("Profile evaluation error for %s/%s: %s", company, field, exc)
+            return ""
 
 
 # ---------------------------------------------------------------------------
