@@ -21,6 +21,7 @@ jobs:
 
       - name: Skip if already ran today
         id: check
+        if: github.event_name == 'schedule'
         run: |
           python - <<'EOF'
           import json, os, sys
