@@ -93,8 +93,9 @@ def _send_sendgrid(
     import json as _json
     import certifi
 
+    recipients = [r.strip() for r in recipient.split(",") if r.strip()]
     payload = _json.dumps({
-        "personalizations": [{"to": [{"email": recipient}]}],
+        "personalizations": [{"to": [{"email": r} for r in recipients]}],
         "from": {"email": sender},
         "subject": subject,
         "content": [{"type": "text/html", "value": html_body}],
@@ -137,10 +138,11 @@ def _send_smtp(
     user = os.environ.get("SMTP_USER", sender)
     password = os.environ.get("SMTP_PASSWORD", "")
 
+    recipients = [r.strip() for r in recipient.split(",") if r.strip()]
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = sender
-    msg["To"] = recipient
+    msg["To"] = ", ".join(recipients)
     msg.attach(MIMEText(html_body, "html", "utf-8"))
 
     context = ssl.create_default_context()
@@ -148,7 +150,7 @@ def _send_smtp(
         server.ehlo()
         server.starttls(context=context)
         server.login(user, password)
-        server.sendmail(sender, [recipient], msg.as_string())
+        server.sendmail(sender, recipients, msg.as_string())
 
     logger.info("Email sent via SMTP (%s:%s) to %s", host, port, recipient)
 
