@@ -2,8 +2,12 @@ name: Ashcombe Daily News Digest
 
 on:
   schedule:
-    - cron: '0 7 * * 1-5'  # 7am UTC Mon-Fri = 8am BST (summer) / 7am GMT (winter)
-  workflow_dispatch:         # Allow manual trigger from GitHub UI
+    - cron: '0 7 * * 1-5'   # attempt 1 — 7:00 UTC
+    - cron: '20 7 * * 1-5'  # attempt 2 — 7:20 UTC
+    - cron: '40 7 * * 1-5'  # attempt 3 — 7:40 UTC
+    - cron: '0 8 * * 1-5'   # attempt 4 — 8:00 UTC
+    - cron: '20 8 * * 1-5'  # attempt 5 — 8:20 UTC
+  workflow_dispatch:
 
 jobs:
   run-tracker:
@@ -15,15 +19,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Skip if already ran today
+        id: check
+        run: |
+          python - <<'EOF'
+          import json, os, sys
+          from datetime import datetime, timezone
+          try:
+              state = json.load(open("state.json"))
+              last = state.get("last_run", "")
+              today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+              already = last.startswith(today)
+          except Exception:
+              already = False
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"already_ran={'true' if already else 'false'}\n")
+          EOF
+        env:
+          PYTHONPATH: .
+
       - name: Set up Python
+        if: steps.check.outputs.already_ran != 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
       - name: Install dependencies
+        if: steps.check.outputs.already_ran != 'true'
         run: pip install -r requirements.txt
 
       - name: Run tracker
+        if: steps.check.outputs.already_ran != 'true'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
@@ -33,6 +59,7 @@ jobs:
         run: python tracker.py
 
       - name: Save updated state
+        if: steps.check.outputs.already_ran != 'true'
         run: |
           git config user.name "Ashcombe Tracker"
           git config user.email "tracker@ashcombeadvisers.com"
