@@ -168,6 +168,7 @@ def run(dry_run: bool = False) -> None:
     new_hashes: set[str] = {item.item_hash for item in flat_items}
 
     digest: dict[str, list[dict]] = {}
+    secondary_digest: dict[str, list[dict]] = {}
     if flat_items:
         item_dicts = [
             {"company": item.company, "title": item.title, "source": item.source, "url": item.url}
@@ -176,18 +177,22 @@ def run(dry_run: bool = False) -> None:
         classified = summariser.classify_batch(item_dicts)
 
         for news_item, (item_dict, result) in zip(flat_items, classified):
-            if not result.relevant:
-                continue
             company = news_item.company
-            digest.setdefault(company, []).append({
+            entry = {
                 "summary": result.summary,
                 "url": news_item.url,
                 "source": news_item.source,
                 "published": news_item.published.strftime("%-d %b %Y"),
                 "category": result.category,
-            })
+            }
+            if result.relevant:
+                digest.setdefault(company, []).append(entry)
+            elif result.secondary and result.summary:
+                secondary_digest.setdefault(company, []).append(entry)
 
     total_relevant = sum(len(v) for v in digest.values())
+    total_secondary = sum(len(v) for v in secondary_digest.values())
+    logger.info("%d secondary item(s) across %d company/companies", total_secondary, len(secondary_digest))
     logger.info(
         "%d relevant item(s) across %d company/companies",
         total_relevant,
@@ -215,7 +220,7 @@ def run(dry_run: bool = False) -> None:
             )
 
     # 5. Exit cleanly if nothing to report
-    if total_relevant == 0 and not profile_changes and not jobs_changes:
+    if total_relevant == 0 and total_secondary == 0 and not profile_changes and not jobs_changes:
         logger.info("No relevant items after filtering — exiting cleanly (no email sent)")
         seen_hashes.update(new_hashes)
         save_state(run_dt, seen_hashes, updated_profiles, updated_jobs)
@@ -235,6 +240,7 @@ def run(dry_run: bool = False) -> None:
     logger.info("--- Sending digest ---")
     send_digest(
         digest,
+        secondary_digest=secondary_digest,
         profile_changes=profile_changes,
         jobs_changes=jobs_changes,
         digest_summary=digest_summary,

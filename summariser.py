@@ -24,41 +24,34 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 BATCH_SYSTEM_PROMPT = """\
 You are a senior business intelligence analyst at Ashcombe Advisers, \
-a specialist advisory firm. Your task is to assess news items about \
-target companies and flag anything that could be of interest.
+a specialist advisory firm. Classify each news item into one of three tiers.
 
-RELEVANT categories — include any item that fits one of these:
-  - senior_hire       : C-suite, director, VP appointments or departures
-  - contract_win      : new contracts, framework awards, procurement wins
-  - funding_ma        : fundraising rounds, M&A, acquisitions, mergers, IPO news
-  - product_launch    : new products, services, platforms, or product updates
-  - partnership       : strategic alliances, joint ventures, teaming agreements
-  - event             : awards, conference participation, speaking engagements
-  - financial_results : earnings releases, profit warnings, revenue announcements
-  - company_update    : any company news, announcements, strategic updates, \
-operational milestones, customer wins, market commentary, or LinkedIn posts \
-where the company discusses its business, products, customers, or team
-  - media_coverage    : any press coverage, interviews, profiles, rankings, \
-or features where the company is a primary subject
+TIER 1 — PRIMARY (relevant: true, secondary: false)
+Substantive business intelligence: senior hires, contract wins, funding/M&A, \
+product launches, partnerships, awards, financial results, strategic announcements, \
+notable press coverage where the company is the primary subject, or LinkedIn posts \
+discussing business activity, customers, or strategy.
 
-DEFAULT TO RELEVANT — if an item is about the company and contains any \
-business substance, mark it relevant. Only suppress:
-  - Items where the company is merely listed alongside 10+ other companies \
-with no specific information about them
-  - Pure stock price tickers with no news
-  - Job adverts posted on LinkedIn (not news about hiring, just the advert itself)
+TIER 2 — SECONDARY (relevant: false, secondary: true)
+Lower-signal but still worth noting: team culture posts, employee spotlights, \
+event participation, industry articles where the company is briefly mentioned, \
+softer company news, or posts useful for relationship-building with company contacts.
 
-DEDUPLICATION — if two or more items cover the same underlying story, \
-mark only the most informative one as relevant.
+TIER 3 — DISCARD (relevant: false, secondary: false)
+Suppress only: pure stock price tickers, job adverts, and items where the company \
+is listed among 10+ others with no specific detail about them.
 
-You will receive multiple news items for the same company. \
+DEDUPLICATION — if two or more items cover the same story, keep only the most \
+informative one at whatever tier it belongs; discard the rest.
+
 Output ONLY a valid JSON array — no markdown, no prose — \
 with one object per item in the same order:
 [
   {
     "relevant": <true|false>,
-    "summary": "<one sentence, max 20 words, active voice, present tense, or empty string if not relevant>",
-    "category": "<one of the category keys above, or empty string if not relevant>"
+    "secondary": <true|false>,
+    "summary": "<one sentence, max 20 words, active voice, present tense, or empty string if tier 3>",
+    "category": "<one of: senior_hire, contract_win, funding_ma, product_launch, partnership, event, financial_results, company_update, media_coverage — or empty string if tier 3>"
   }
 ]
 """
@@ -68,8 +61,8 @@ Company: {company}
 
 {items}
 
-Classify each item. Return a JSON array with {n} objects in the same order. \
-When in doubt, mark as relevant.
+Classify each item into tier 1, 2, or 3. Return a JSON array with {n} objects \
+in the same order.
 """
 
 # Default model — swap to claude-opus-4-6 for higher accuracy if budget allows
@@ -106,24 +99,25 @@ Output a single JSON object — no markdown, no extra prose:
 @dataclass
 class SummaryResult:
     relevant: bool
+    secondary: bool
     summary: str
     category: str
 
 
 def _parse_response(text: str) -> SummaryResult:
     """Extract JSON from the model response, tolerating minor formatting noise."""
-    # Strip any accidental markdown fences
     text = re.sub(r"```(?:json)?", "", text).strip()
     try:
         data = json.loads(text)
         return SummaryResult(
             relevant=bool(data.get("relevant", False)),
+            secondary=bool(data.get("secondary", False)),
             summary=str(data.get("summary", "")).strip(),
             category=str(data.get("category", "")).strip(),
         )
     except json.JSONDecodeError as exc:
         logger.warning("Failed to parse model response as JSON: %s\nRaw: %s", exc, text)
-        return SummaryResult(relevant=False, summary="", category="")
+        return SummaryResult(relevant=False, secondary=False, summary="", category="")
 
 
 class Summariser:
@@ -163,7 +157,7 @@ class Summariser:
             n=len(items),
         )
 
-        fallback = [SummaryResult(relevant=False, summary="", category="") for _ in items]
+        fallback = [SummaryResult(relevant=False, secondary=False, summary="", category="") for _ in items]
 
         try:
             response = self._client.messages.create(
@@ -206,6 +200,7 @@ class Summariser:
             for i, obj in enumerate(data[:len(items)]):
                 results.append(SummaryResult(
                     relevant=bool(obj.get("relevant", False)),
+                    secondary=bool(obj.get("secondary", False)),
                     summary=str(obj.get("summary", "")).strip(),
                     category=str(obj.get("category", "")).strip(),
                 ))
@@ -213,9 +208,8 @@ class Summariser:
                     "  [%s] item %d relevant=%s category=%s",
                     company, i + 1, results[-1].relevant, results[-1].category,
                 )
-            # Pad with fallback if model returned fewer objects than expected
             while len(results) < len(items):
-                results.append(SummaryResult(relevant=False, summary="", category=""))
+                results.append(SummaryResult(relevant=False, secondary=False, summary="", category=""))
             return results
 
         except (anthropic.APIError, json.JSONDecodeError, Exception) as exc:

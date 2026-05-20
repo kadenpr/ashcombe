@@ -31,6 +31,7 @@ def _render_html(
     companies: dict[str, list[dict]],
     run_dt: datetime,
     template_dir: str = ".",
+    secondary_digest: dict | None = None,
     profile_changes: list | None = None,
     jobs_changes: list | None = None,
     digest_summary: str = "",
@@ -59,6 +60,7 @@ def _render_html(
 
     raw_html = template.render(
         companies=companies,
+        secondary_digest=secondary_digest or {},
         run_date=run_dt_uk.strftime("%A %d %B %Y"),
         run_time=run_dt_uk.strftime("%H:%M"),
         n_companies=n_companies,
@@ -160,6 +162,7 @@ def send_digest(
     run_dt: Optional[datetime] = None,
     dry_run: bool = False,
     template_dir: str = ".",
+    secondary_digest: dict | None = None,
     profile_changes: list | None = None,
     jobs_changes: list | None = None,
     digest_summary: str = "",
@@ -179,6 +182,7 @@ def send_digest(
     html = _render_html(
         companies, run_dt,
         template_dir=template_dir,
+        secondary_digest=secondary_digest,
         profile_changes=profile_changes,
         jobs_changes=jobs_changes,
         digest_summary=digest_summary,
