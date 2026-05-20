@@ -134,7 +134,7 @@ def run(dry_run: bool = False) -> None:
     logger.info("Fetched %d new item(s) total (RSS + LinkedIn + people)", total_fetched)
 
     # 3d. Check LinkedIn company profiles — Mondays only (weekly cadence)
-    is_monday = run_dt.weekday() == 0
+    is_monday = run_dt.weekday() == 0 or os.environ.get("FORCE_MONDAY", "").lower() in ("1", "true", "yes")
     if is_monday:
         logger.info("--- Checking LinkedIn company profiles (Monday weekly check) ---")
         profile_changes, updated_profiles = fetch_profile_changes(companies, company_profiles)
