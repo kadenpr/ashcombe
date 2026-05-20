@@ -143,7 +143,7 @@
       <!-- Stats bar (B) -->
       <div class="stats-bar">
         <span class="stat-pill stat-pill-highlight">{{ n_items }} item{{ 's' if n_items != 1 }}</span>
-        <span class="stat-pill">{{ n_companies }} company{{ 'ies' if n_companies != 1 else 'y' }}</span>
+        <span class="stat-pill">{{ n_companies }} {{ 'companies' if n_companies != 1 else 'company' }}</span>
         {% if category_counts.get('senior_hire', 0) > 0 %}
         <span class="stat-pill stat-pill-hire">{{ category_counts['senior_hire'] }} senior hire{{ 's' if category_counts['senior_hire'] != 1 }}</span>
         {% endif %}
