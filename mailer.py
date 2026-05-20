@@ -34,7 +34,6 @@ def _render_html(
     secondary_digest: dict | None = None,
     profile_changes: list | None = None,
     jobs_changes: list | None = None,
-    digest_summary: str = "",
     company_owners: dict | None = None,
 ) -> str:
     """
@@ -67,7 +66,6 @@ def _render_html(
         n_items=n_items,
         profile_changes=profile_changes or [],
         jobs_changes=jobs_changes or [],
-        digest_summary=digest_summary,
         company_owners=company_owners or {},
         category_counts=category_counts,
     )
@@ -165,7 +163,6 @@ def send_digest(
     secondary_digest: dict | None = None,
     profile_changes: list | None = None,
     jobs_changes: list | None = None,
-    digest_summary: str = "",
     company_owners: dict | None = None,
 ) -> str:
     """
@@ -185,7 +182,6 @@ def send_digest(
         secondary_digest=secondary_digest,
         profile_changes=profile_changes,
         jobs_changes=jobs_changes,
-        digest_summary=digest_summary,
         company_owners=company_owners,
     )
 

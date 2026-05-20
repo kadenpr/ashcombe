@@ -44,11 +44,6 @@
     /* ── BODY ──────────────────────────────────────────────── */
     .body-pad { padding: 24px 24px 28px; }
 
-    /* Executive summary */
-    .summary-box { background: #ffffff; border-left: 4px solid #1a6dc5; border-radius: 6px; padding: 14px 18px; margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-    .summary-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #1a6dc5; margin-bottom: 7px; }
-    .summary-text  { font-size: 14px; color: #1a1a2e; line-height: 1.7; }
-
     /* ── COMPANY CARDS ─────────────────────────────────────── */
     .company-card { background: #ffffff; border-radius: 8px; overflow: hidden; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.07); border: 1px solid #e4e8f0; }
 
@@ -173,14 +168,6 @@
 
     <!-- BODY -->
     <div class="body-pad">
-
-      <!-- Executive summary -->
-      {% if digest_summary %}
-      <div class="summary-box">
-        <div class="summary-label">Intelligence Summary</div>
-        <div class="summary-text">{{ digest_summary }}</div>
-      </div>
-      {% endif %}
 
       <!-- Company cards (A) -->
       {% for company_name, items in companies.items() %}

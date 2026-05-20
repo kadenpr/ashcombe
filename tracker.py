@@ -226,15 +226,6 @@ def run(dry_run: bool = False) -> None:
         save_state(run_dt, seen_hashes, updated_profiles, updated_jobs)
         sys.exit(0)
 
-    # 4d. Generate executive summary
-    logger.info("--- Generating digest summary ---")
-    digest_summary = summariser.generate_digest_summary(
-        digest=digest,
-        profile_changes=profile_changes,
-        jobs_changes=jobs_changes,
-        is_monday=is_monday,
-    )
-
     # 6. Render and send digest
     company_owners = {c["name"]: c.get("owner", "") for c in companies}
     logger.info("--- Sending digest ---")
@@ -243,7 +234,6 @@ def run(dry_run: bool = False) -> None:
         secondary_digest=secondary_digest,
         profile_changes=profile_changes,
         jobs_changes=jobs_changes,
-        digest_summary=digest_summary,
         company_owners=company_owners,
         run_dt=run_dt,
         dry_run=dry_run,
