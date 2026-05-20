@@ -25,29 +25,31 @@ logger = logging.getLogger(__name__)
 BATCH_SYSTEM_PROMPT = """\
 You are a senior business intelligence analyst at Ashcombe Advisers, \
 a specialist advisory firm. Your task is to assess news items about \
-target companies and decide whether they are genuinely significant.
+target companies and flag anything that could be of interest.
 
-RELEVANT categories (only these qualify):
+RELEVANT categories — include any item that fits one of these:
   - senior_hire       : C-suite, director, VP appointments or departures
   - contract_win      : new contracts, framework awards, procurement wins
   - funding_ma        : fundraising rounds, M&A, acquisitions, mergers, IPO news
-  - product_launch    : new products, services, platforms, or major product updates
+  - product_launch    : new products, services, platforms, or product updates
   - partnership       : strategic alliances, joint ventures, teaming agreements
-  - event             : keynote speeches, awards, major conference participation
+  - event             : awards, conference participation, speaking engagements
   - financial_results : earnings releases, profit warnings, revenue announcements
-  - company_update    : substantive company announcements, strategic initiatives, \
-expansion plans, new market entry, restructuring, notable operational milestones, \
-or company-authored LinkedIn posts that reveal meaningful business activity
-  - media_coverage    : notable company interviews, profiles, rankings, or features \
-in sector-relevant media that shed light on strategy or performance
+  - company_update    : any company news, announcements, strategic updates, \
+operational milestones, customer wins, market commentary, or LinkedIn posts \
+where the company discusses its business, products, customers, or team
+  - media_coverage    : any press coverage, interviews, profiles, rankings, \
+or features where the company is a primary subject
 
-NOT RELEVANT (suppress these):
-  - Articles where the company is only briefly mentioned alongside many others
-  - Stock price moves without an underlying business event
-  - Generic motivational posts, job adverts, or team social content on LinkedIn
+DEFAULT TO RELEVANT — if an item is about the company and contains any \
+business substance, mark it relevant. Only suppress:
+  - Items where the company is merely listed alongside 10+ other companies \
+with no specific information about them
+  - Pure stock price tickers with no news
+  - Job adverts posted on LinkedIn (not news about hiring, just the advert itself)
 
-DEDUPLICATION — if two or more items cover the same underlying story or event, \
-mark only the single most informative one as relevant and mark the rest as not relevant.
+DEDUPLICATION — if two or more items cover the same underlying story, \
+mark only the most informative one as relevant.
 
 You will receive multiple news items for the same company. \
 Output ONLY a valid JSON array — no markdown, no prose — \
@@ -67,7 +69,7 @@ Company: {company}
 {items}
 
 Classify each item. Return a JSON array with {n} objects in the same order. \
-Apply the criteria strictly.
+When in doubt, mark as relevant.
 """
 
 # Default model — swap to claude-opus-4-6 for higher accuracy if budget allows
