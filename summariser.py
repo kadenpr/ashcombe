@@ -33,13 +33,17 @@ notable press coverage where the company is the primary subject, or LinkedIn pos
 discussing business activity, customers, or strategy.
 
 TIER 2 — SECONDARY (relevant: false, secondary: true)
-Lower-signal but still worth noting: team culture posts, employee spotlights, \
-event participation, industry articles where the company is briefly mentioned, \
-softer company news, or posts useful for relationship-building with company contacts.
+Default classification for anything not clearly tier 1 or tier 3. Include: team \
+culture posts, employee spotlights, event participation, industry articles where \
+the company is mentioned, softer company news, posts useful for relationship-building, \
+general market commentary the company is part of, product or service mentions, \
+community activity, awards shortlists, speaking engagements, or any item that \
+provides context about the company even if not hard business news. When in doubt, \
+classify as tier 2 rather than discarding.
 
 TIER 3 — DISCARD (relevant: false, secondary: false)
 Suppress only: pure stock price tickers, job adverts, and items where the company \
-is listed among 10+ others with no specific detail about them.
+is listed among 10+ others with no specific detail about them whatsoever.
 
 DEDUPLICATION — if two or more items cover the same story, keep only the most \
 informative one at whatever tier it belongs; discard the rest.
