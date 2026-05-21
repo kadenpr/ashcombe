@@ -91,7 +91,9 @@ def fetch_company_news(
       - were published after *since*
       - have not been seen before (not in *seen_hashes*)
     """
-    query = urllib.parse.quote_plus(company_name)
+    # Wrap in quotes for exact phrase matching so e.g. "Piper Private Equity"
+    # doesn't match unrelated articles that happen to contain all three words.
+    query = urllib.parse.quote_plus(f'"{company_name}"')
     url = GOOGLE_NEWS_RSS.format(query=query)
     logger.debug("Fetching RSS for %s: %s", company_name, url)
 
