@@ -158,11 +158,17 @@ def fetch_all(
     """
     Fetch news for all companies. Returns a dict keyed by company name.
     *companies* is a list of dicts with at least a 'name' key.
+    Uses 'search_name' for the Google News query when set (avoids false matches
+    for companies with short or ambiguous names like Piper or GCP).
     """
     results: dict[str, list[NewsItem]] = {}
     for i, company in enumerate(companies):
         name = company["name"]
-        items = fetch_company_news(name, since, seen_hashes)
+        search_name = company.get("search_name", "").strip() or name
+        items = fetch_company_news(search_name, since, seen_hashes)
+        # Re-label items with the canonical company name
+        for item in items:
+            item.company = name
         results[name] = items
         if i < len(companies) - 1:
             time.sleep(REQUEST_DELAY)

@@ -1,41 +1,41 @@
-name,url,owner,linkedin_url
-Lovehoney,https://lovehoney.co.uk,Clients,https://www.linkedin.com/company/lovehoneygroup/?originalSubdomain=uk
-Womaniser,https://womanizer.com,Clients,
-Pooky,https://pooky.com,Clients,
-Whiffle,https://whiffle.nl,Clients,https://www.linkedin.com/company/whiffle/
-Spoke,https://spoke-london.com,Clients,
-Demand Logic,https://demandlogic.co.uk,Clients,https://www.linkedin.com/company/demand-logic-limited/?originalSubdomain=uk
-Wattbike,https://wattbike.com,Clients,https://www.linkedin.com/company/wattbike/
-Jellycat,https://jellycat.com,Clients,https://www.linkedin.com/company/jellycat/
-Curam Care,https://curamcare.com,Targets,https://www.linkedin.com/company/curam-io/
-Estate Search,https://estatesearch.co.uk,Targets,https://www.linkedin.com/company/estatesearch/
-Tenzo,https://gotenzo.com,Targets,https://www.linkedin.com/company/tenzo-inc./
-Mous,https://mous.co,Targets,https://www.linkedin.com/company/mous/?originalSubdomain=uk
-Hartley Botanic,https://hartley-botanic.com,Targets,https://www.linkedin.com/company/hartley-botanic/
-Thortful,https://thortful.com,Targets,https://www.linkedin.com/company/thortful/
-Vivobarefoot,https://vivobarefoot.com,Targets,https://www.linkedin.com/company/vivobarefoot/
-First Mile,https://thefirstmile.co.uk,Targets,https://www.linkedin.com/company/first-mile-ltd/
-Get Licensed,https://get-licensed.co.uk,Targets,https://www.linkedin.com/company/get-licensed/
-Olio,https://olioapp.com,Targets,https://www.linkedin.com/company/olio-share-more-waste-less/
-Moonpig,https://moonpig.com,Targets,https://www.linkedin.com/company/moonpig-com/
-Wiremind,https://wiremind.io,PTT,https://www.linkedin.com/company/wiremind/
-Masabi,https://masabi.com,PTT,https://www.linkedin.com/company/masabi/
-Optibus,https://optibus.com,PTT,https://www.linkedin.com/company/optibus/
-Swiftly,https://goswift.ly,PTT,https://www.linkedin.com/company/swiftlyinc/
-15below,https://15below.com,PTT,https://www.linkedin.com/company/15below/
-Ticketer,https://ticketer.com,PTT,https://www.linkedin.com/company/ticketer-corvia-ltd-/
-Turnit,https://turnit.com,PTT,https://www.linkedin.com/company/turnit-ltd/?originalSubdomain=ee
-Trainline,https://thetrainline.com,PTT,https://www.linkedin.com/company/trainline/
-IVU,https://ivu.com,PTT,https://www.linkedin.com/company/ivu-traffic-technologies-ag/
-Sqills,https://sqills.com,PTT,https://www.linkedin.com/company/sqills/
-Hitachi Rail,https://hitachirail.com,PTT,https://www.linkedin.com/company/hitachirail/
-Goal Systems,https://goalsystems.com,PTT,https://www.linkedin.com/company/goal-2/
-Scheidt & Bachmann,https://scheidt-bachmann.de,PTT,https://www.linkedin.com/company/scheidt-bachmann/
-Piper,https://piper.co.uk,Investors,https://www.linkedin.com/company/piper-private-equity/
-Ares,https://aresmgmt.com,Investors,https://www.linkedin.com/company/ares-management/?originalSubdomain=in
-TDR,https://tdrcapital.com,Investors,https://www.linkedin.com/company/tdr-capital/
-Epiris,https://epiris.co.uk,Investors,https://www.linkedin.com/company/epiris/
-Platinum Equity,https://platinumequity.com,Investors,https://www.linkedin.com/company/platinum-equity/
-Tenzing,https://tenzing.pe,Investors,https://www.linkedin.com/company/tenzing-pe-ltd/
-GCP,https://www.growthcapital.co.uk,Investors,
-Bridgepoint,https://bridgepointgroup.com,Investors,https://www.linkedin.com/company/bridgepoint/
+name,url,owner,linkedin_url,search_name
+Lovehoney,https://lovehoney.co.uk,Clients,https://www.linkedin.com/company/lovehoneygroup/?originalSubdomain=uk,
+Womaniser,https://womanizer.com,Clients,,
+Pooky,https://pooky.com,Clients,,
+Whiffle,https://whiffle.nl,Clients,https://www.linkedin.com/company/whiffle/,
+Spoke,https://spoke-london.com,Clients,,Spoke London menswear
+Demand Logic,https://demandlogic.co.uk,Clients,https://www.linkedin.com/company/demand-logic-limited/?originalSubdomain=uk,
+Wattbike,https://wattbike.com,Clients,https://www.linkedin.com/company/wattbike/,
+Jellycat,https://jellycat.com,Clients,https://www.linkedin.com/company/jellycat/,
+Curam Care,https://curamcare.com,Targets,https://www.linkedin.com/company/curam-io/,
+Estate Search,https://estatesearch.co.uk,Targets,https://www.linkedin.com/company/estatesearch/,
+Tenzo,https://gotenzo.com,Targets,https://www.linkedin.com/company/tenzo-inc./,
+Mous,https://mous.co,Targets,https://www.linkedin.com/company/mous/?originalSubdomain=uk,
+Hartley Botanic,https://hartley-botanic.com,Targets,https://www.linkedin.com/company/hartley-botanic/,
+Thortful,https://thortful.com,Targets,https://www.linkedin.com/company/thortful/,
+Vivobarefoot,https://vivobarefoot.com,Targets,https://www.linkedin.com/company/vivobarefoot/,
+First Mile,https://thefirstmile.co.uk,Targets,https://www.linkedin.com/company/first-mile-ltd/,
+Get Licensed,https://get-licensed.co.uk,Targets,https://www.linkedin.com/company/get-licensed/,
+Olio,https://olioapp.com,Targets,https://www.linkedin.com/company/olio-share-more-waste-less/,
+Moonpig,https://moonpig.com,Targets,https://www.linkedin.com/company/moonpig-com/,
+Wiremind,https://wiremind.io,PTT,https://www.linkedin.com/company/wiremind/,
+Masabi,https://masabi.com,PTT,https://www.linkedin.com/company/masabi/,
+Optibus,https://optibus.com,PTT,https://www.linkedin.com/company/optibus/,
+Swiftly,https://goswift.ly,PTT,https://www.linkedin.com/company/swiftlyinc/,Swiftly transit technology
+15below,https://15below.com,PTT,https://www.linkedin.com/company/15below/,
+Ticketer,https://ticketer.com,PTT,https://www.linkedin.com/company/ticketer-corvia-ltd-/,
+Turnit,https://turnit.com,PTT,https://www.linkedin.com/company/turnit-ltd/?originalSubdomain=ee,
+Trainline,https://thetrainline.com,PTT,https://www.linkedin.com/company/trainline/,
+IVU,https://ivu.com,PTT,https://www.linkedin.com/company/ivu-traffic-technologies-ag/,IVU Traffic Technologies
+Sqills,https://sqills.com,PTT,https://www.linkedin.com/company/sqills/,
+Hitachi Rail,https://hitachirail.com,PTT,https://www.linkedin.com/company/hitachirail/,
+Goal Systems,https://goalsystems.com,PTT,https://www.linkedin.com/company/goal-2/,
+Scheidt & Bachmann,https://scheidt-bachmann.de,PTT,https://www.linkedin.com/company/scheidt-bachmann/,
+Piper,https://piper.co.uk,Investors,https://www.linkedin.com/company/piper-private-equity/,Piper Private Equity
+Ares,https://aresmgmt.com,Investors,https://www.linkedin.com/company/ares-management/?originalSubdomain=in,Ares Management
+TDR,https://tdrcapital.com,Investors,https://www.linkedin.com/company/tdr-capital/,TDR Capital
+Epiris,https://epiris.co.uk,Investors,https://www.linkedin.com/company/epiris/,
+Platinum Equity,https://platinumequity.com,Investors,https://www.linkedin.com/company/platinum-equity/,
+Tenzing,https://tenzing.pe,Investors,https://www.linkedin.com/company/tenzing-pe-ltd/,
+GCP,https://www.growthcapital.co.uk,Investors,,Growth Capital Partners
+Bridgepoint,https://bridgepointgroup.com,Investors,https://www.linkedin.com/company/bridgepoint/,

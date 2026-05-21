@@ -57,7 +57,7 @@ with one object per item in the same order:
 """
 
 BATCH_USER_TEMPLATE = """\
-Company: {company}
+Company: {company}{full_name_line}
 
 {items}
 
@@ -142,6 +142,7 @@ class Summariser:
         self,
         company: str,
         items: list[dict],
+        search_name: str = "",
     ) -> list[SummaryResult]:
         """
         Classify all items for a single company in one API call.
@@ -151,8 +152,10 @@ class Summariser:
             f"Item {i + 1} — Headline: {item['title']} | Source: {item['source']}"
             for i, item in enumerate(items)
         )
+        full_name_line = f" (full name: {search_name})" if search_name and search_name != company else ""
         user_content = BATCH_USER_TEMPLATE.format(
             company=company,
+            full_name_line=full_name_line,
             items=lines,
             n=len(items),
         )
@@ -236,7 +239,8 @@ class Summariser:
         for company, indexed_items in groups.items():
             indices = [i for i, _ in indexed_items]
             company_items = [item for _, item in indexed_items]
-            company_results = self._classify_company_batch(company, company_items)
+            search_name = company_items[0].get("search_name", "") if company_items else ""
+            company_results = self._classify_company_batch(company, company_items, search_name=search_name)
             for idx, result in zip(indices, company_results):
                 results[idx] = (items[idx], result)
 

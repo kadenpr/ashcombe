@@ -110,6 +110,7 @@ def run(dry_run: bool = False) -> None:
 
     # 2. Load companies
     companies = load_companies()
+    company_search_names = {c["name"]: c.get("search_name", "").strip() for c in companies}
     logger.info("Monitoring %d companies", len(companies))
 
     # 3. Fetch RSS feeds
@@ -171,7 +172,8 @@ def run(dry_run: bool = False) -> None:
     secondary_digest: dict[str, list[dict]] = {}
     if flat_items:
         item_dicts = [
-            {"company": item.company, "title": item.title, "source": item.source, "url": item.url}
+            {"company": item.company, "title": item.title, "source": item.source, "url": item.url,
+             "search_name": company_search_names.get(item.company, "")}
             for item in flat_items
         ]
         classified = summariser.classify_batch(item_dicts)
