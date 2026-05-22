@@ -39,6 +39,7 @@ UK_TZ = ZoneInfo("Europe/London")
 STATE_FILE = Path("state.json")
 COMPANIES_FILE = Path("companies.csv")
 DEFAULT_LOOKBACK_HOURS = 24  # used on very first run only
+MAX_TIER1_PER_COMPANY = 2  # excess tier 1 items overflow to Also in Brief
 
 logger = logging.getLogger(__name__)
 
@@ -187,9 +188,9 @@ def run(dry_run: bool = False) -> None:
                 "published": news_item.published.strftime("%-d %b %Y"),
                 "category": result.category,
             }
-            if result.relevant:
+            if result.relevant and len(digest.get(company, [])) < MAX_TIER1_PER_COMPANY:
                 digest.setdefault(company, []).append(entry)
-            elif result.secondary and result.summary:
+            elif result.summary:
                 secondary_digest.setdefault(company, []).append(entry)
 
     total_relevant = sum(len(v) for v in digest.values())
