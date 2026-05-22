@@ -39,7 +39,7 @@ UK_TZ = ZoneInfo("Europe/London")
 STATE_FILE = Path("state.json")
 COMPANIES_FILE = Path("companies.csv")
 DEFAULT_LOOKBACK_HOURS = 24  # used on very first run only
-MAX_TIER1_PER_COMPANY = 2  # excess tier 1 items overflow to Also in Brief
+MAX_TIER1_PER_COMPANY = 3  # excess tier 1 items overflow to Also in Brief
 
 logger = logging.getLogger(__name__)
 
