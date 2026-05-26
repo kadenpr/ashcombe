@@ -227,9 +227,8 @@ def run(dry_run: bool = False) -> None:
                 top_functions=change.current.functions,
             )
 
-    # 5. Exit cleanly if nothing substantive to report
-    # Require at least one tier 1 item or a profile/jobs change — secondary-only is not enough to send
-    if total_relevant == 0 and not profile_changes and not jobs_changes:
+    # 5. Exit cleanly if nothing to report
+    if total_relevant == 0 and total_secondary == 0 and not profile_changes and not jobs_changes:
         logger.info("No relevant items after filtering — exiting cleanly (no email sent)")
         seen_hashes.update(new_hashes)
         save_state(run_dt, seen_hashes, updated_profiles, updated_jobs)
