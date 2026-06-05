@@ -42,53 +42,15 @@
     .stat-pill-weekly  { background: #ede9fe; color: #5b21b6; }
 
     /* ── BODY ──────────────────────────────────────────────── */
-    .body-pad { padding: 24px 24px 28px; }
+    .body-pad { padding: 20px 24px 28px; }
 
-    /* ── COMPANY CARDS ─────────────────────────────────────── */
-    .company-card { background: #ffffff; border-radius: 8px; overflow: hidden; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.07); border: 1px solid #e4e8f0; }
-
-    /* Coloured top border by owner category */
-    .card-clients   { border-top: 3px solid #1a6dc5; }
-    .card-targets   { border-top: 3px solid #7c3aed; }
-    .card-ptt       { border-top: 3px solid #d97706; }
-    .card-investors { border-top: 3px solid #059669; }
-    .card-default   { border-top: 3px solid #64748b; }
-
-    .card-header { padding: 11px 16px; background: #ffffff; border-bottom: 1px solid #eef0f6; overflow: hidden; }
-    .card-company-name { font-size: 14px; font-weight: 700; color: #0d1b3e; }
-    .owner-badge { float: right; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; padding: 2px 9px; border-radius: 10px; margin-top: 1px; }
-    .owner-clients   { background: #dbeafe; color: #1e40af; }
-    .owner-targets   { background: #ede9fe; color: #5b21b6; }
-    .owner-ptt       { background: #fef3c7; color: #92400e; }
-    .owner-investors { background: #d1fae5; color: #065f46; }
-    .owner-default   { background: #f1f5f9; color: #475569; }
-
-    .card-body { padding: 4px 16px 4px; }
-
-    /* News item */
-    .news-item { padding: 10px 0; border-bottom: 1px solid #f1f4f9; }
-    .news-item:last-child { border-bottom: none; }
-    .news-summary { font-size: 13.5px; color: #1a1a2e; line-height: 1.55; margin-bottom: 5px; }
-    .news-meta { font-size: 11.5px; color: #6b7280; }
-    .news-meta a { color: #1a6dc5; text-decoration: none; }
-    .news-meta a:hover { text-decoration: underline; }
-
-    /* Category tags */
-    .tag {
-      display: inline-block;
-      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
-      padding: 2px 7px; border-radius: 3px; margin-left: 5px; vertical-align: middle;
-    }
-    .tag-contract_win      { background: #dcfce7; color: #166534; }
-    .tag-senior_hire       { background: #dbeafe; color: #1e40af; }
-    .tag-funding_ma        { background: #fef9c3; color: #854d0e; }
-    .tag-product_launch    { background: #ede9fe; color: #5b21b6; }
-    .tag-partnership       { background: #ffedd5; color: #9a3412; }
-    .tag-event             { background: #f1f5f9; color: #334155; }
-    .tag-financial_results { background: #fce7f3; color: #9d174d; }
-    .tag-company_update    { background: #e0f2fe; color: #075985; }
-    .tag-media_coverage    { background: #ecfdf5; color: #065f46; }
-    .tag-default           { background: #f1f5f9; color: #334155; }
+    /* ── DIGEST TABLE ──────────────────────────────────────── */
+    .digest-table { width: 100%; border-collapse: collapse; }
+    .digest-company-cell { width: 130px; font-size: 12.5px; font-weight: 700; color: #0d1b3e; padding: 8px 12px 8px 0; vertical-align: top; border-bottom: 1px solid #eef0f6; white-space: nowrap; }
+    .digest-first-row td { border-top: 1px solid #eef0f6; }
+    .digest-news-cell { font-size: 13px; color: #374151; padding: 6px 0 6px 0; vertical-align: top; border-bottom: 1px solid #f8fafc; line-height: 1.5; }
+    .digest-news-cell:last-child { border-bottom: 1px solid #eef0f6; }
+    .digest-link { margin-left: 8px; color: #1a6dc5; text-decoration: none; white-space: nowrap; font-size: 12px; }
 
     /* ── SECTION HEADERS (Jobs / Profiles) ─────────────────── */
     .section-banner { background: #f1f5f9; color: #0d1b3e; border: 1px solid #e4e8f0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; padding: 9px 16px; border-radius: 6px 6px 0 0; margin-top: 22px; }
@@ -118,15 +80,6 @@
     .profile-text-new { background: #f0fdf4; border-left: 3px solid #86efac; padding: 7px 10px; font-size: 13px; color: #374151; border-radius: 2px; line-height: 1.5; }
     .profile-evaluation { margin-top: 9px; font-size: 13px; color: #374151; background: #f8fafc; border-left: 3px solid #1a6dc5; padding: 8px 10px; border-radius: 2px; line-height: 1.5; }
     .profile-divider { border: none; border-top: 1px solid #f1f4f9; margin: 14px 0; }
-
-    /* ── ALSO IN BRIEF ────────────────────────────────────── */
-    .brief-section { margin-top: 22px; }
-    .brief-header { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #9ca3af; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #eef0f6; }
-    .brief-item { display: flex; align-items: baseline; padding: 5px 0; border-bottom: 1px solid #f8fafc; font-size: 12.5px; line-height: 1.45; }
-    .brief-item:last-child { border-bottom: none; }
-    .brief-company { font-weight: 700; color: #0d1b3e; min-width: 110px; margin-right: 8px; flex-shrink: 0; }
-    .brief-summary { color: #4b5563; flex: 1; }
-    .brief-link { margin-left: 8px; color: #1a6dc5; text-decoration: none; white-space: nowrap; flex-shrink: 0; }
 
     /* ── FOOTER ────────────────────────────────────────────── */
     .footer { background: #ffffff; border-top: 1px solid #e4e8f0; padding: 18px 32px; }
@@ -169,30 +122,21 @@
     <!-- BODY -->
     <div class="body-pad">
 
-      <!-- Company cards (A) -->
-      {% for company_name, items in companies.items() %}
-      {% set owner = company_owners.get(company_name, '') %}
-      {% set owner_key = owner.lower().replace(' ', '-') if owner else 'default' %}
-      <div class="company-card card-{{ owner_key }}">
-        <div class="card-header">
-          <span class="owner-badge owner-{{ owner_key }}">{{ owner if owner else 'Other' }}</span>
-          <span class="card-company-name">{{ company_name }}</span>
-        </div>
-        <div class="card-body">
-          {% for item in items %}
-          <div class="news-item">
-            <div class="news-summary">{{ item.summary }}</div>
-            <div class="news-meta">
-              {{ item.source }}
-              &nbsp;·&nbsp;{{ item.published }}
-              <span class="tag tag-{{ item.category }}">{{ item.category | replace('_', ' ') }}</span>
-              &nbsp;·&nbsp;<a href="{{ item.url }}" target="_blank">Read &rarr;</a>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-      {% endfor %}
+      <!-- Unified digest table -->
+      <table class="digest-table" cellpadding="0" cellspacing="0">
+        {% for company_name, items in combined.items() %}
+        {% for item in items %}
+        <tr{% if loop.first %} class="digest-first-row"{% endif %}>
+          {% if loop.first %}
+          <td class="digest-company-cell" rowspan="{{ items|length }}" valign="top">{{ company_name }}</td>
+          {% endif %}
+          <td class="digest-news-cell">
+            {{ item.summary }}<a href="{{ item.url }}" target="_blank" class="digest-link">Read &rarr;</a>
+          </td>
+        </tr>
+        {% endfor %}
+        {% endfor %}
+      </table>
 
       <!-- Hiring Activity -->
       {% if jobs_changes %}
@@ -243,22 +187,6 @@
           {% endif %}
         </div>
         {% if not loop.last %}<hr class="profile-divider" />{% endif %}
-        {% endfor %}
-      </div>
-      {% endif %}
-
-      <!-- Also in Brief -->
-      {% if secondary_digest %}
-      <div class="brief-section">
-        <div class="brief-header">Also in Brief</div>
-        {% for company_name, items in secondary_digest.items() %}
-        {% for item in items %}
-        <div class="brief-item">
-          <span class="brief-company">{{ company_name }}</span>
-          <span class="brief-summary">{{ item.summary }}</span>
-          <a href="{{ item.url }}" target="_blank" class="brief-link">Read &rarr;</a>
-        </div>
-        {% endfor %}
         {% endfor %}
       </div>
       {% endif %}

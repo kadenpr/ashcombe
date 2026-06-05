@@ -49,17 +49,26 @@ def _render_html(
     template = env.get_template(TEMPLATE_FILE)
 
     run_dt_uk = run_dt.astimezone(UK_TZ)
-    n_companies = len(companies)
-    n_items = sum(len(v) for v in companies.values())
 
+    # Merge tier 1 and tier 2 into one ordered dict per company (tier 1 first)
+    from collections import OrderedDict
+    combined: dict[str, list] = OrderedDict()
+    for company, items in companies.items():
+        combined.setdefault(company, []).extend(items)
+    for company, items in (secondary_digest or {}).items():
+        combined.setdefault(company, []).extend(items)
+
+    n_companies = len(combined)
+    n_items = sum(len(v) for v in combined.values())
+
+    # Category counts from tier 1 only (for stats bar highlights)
     all_items_flat = [item for items in companies.values() for item in items]
     category_counts: dict[str, int] = dict(
         Counter(item.get("category", "") for item in all_items_flat)
     )
 
     raw_html = template.render(
-        companies=companies,
-        secondary_digest=secondary_digest or {},
+        combined=combined,
         run_date=run_dt_uk.strftime("%A %d %B %Y"),
         run_time=run_dt_uk.strftime("%H:%M"),
         n_companies=n_companies,
