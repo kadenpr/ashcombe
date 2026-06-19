@@ -8,7 +8,11 @@ Deploy: push to GitHub, connect repo on share.streamlit.io, set
 APP_PASSWORD in Streamlit Secrets.
 """
 
+import base64
+import json
 import os
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 import pandas as pd
@@ -78,8 +82,36 @@ def load() -> pd.DataFrame:
     return df
 
 
+def _push_to_github(csv_content: str, path: str) -> None:
+    """Commit an updated CSV to GitHub so changes survive Streamlit restarts."""
+    try:
+        token = st.secrets.get("GITHUB_TOKEN", "")
+        repo = st.secrets.get("GITHUB_REPO", "kadenpr/ashcombe")
+        if not token:
+            return
+        api_url = f"https://api.github.com/repos/{repo}/contents/{path}"
+        headers = {
+            "Authorization": f"token {token}",
+            "Accept": "application/vnd.github.v3+json",
+            "Content-Type": "application/json",
+        }
+        req = urllib.request.Request(api_url, headers=headers)
+        with urllib.request.urlopen(req) as resp:
+            sha = json.loads(resp.read())["sha"]
+        payload = json.dumps({
+            "message": f"chore: update {path} via admin UI",
+            "content": base64.b64encode(csv_content.encode()).decode(),
+            "sha": sha,
+        }).encode()
+        req = urllib.request.Request(api_url, data=payload, headers=headers, method="PUT")
+        urllib.request.urlopen(req)
+    except Exception as exc:
+        st.warning(f"Changes saved locally but GitHub sync failed: {exc}")
+
+
 def save(df: pd.DataFrame) -> None:
     df.to_csv(COMPANIES_FILE, index=False)
+    _push_to_github(df.to_csv(index=False), "companies.csv")
 
 
 def load_partners() -> pd.DataFrame:
@@ -97,6 +129,7 @@ def load_partners() -> pd.DataFrame:
 
 def save_partners(df: pd.DataFrame) -> None:
     df.to_csv(PARTNERS_FILE, index=False)
+    _push_to_github(df.to_csv(index=False), "partners.csv")
 
 
 # ── UI helpers ───────────────────────────────────────────────────────────────
