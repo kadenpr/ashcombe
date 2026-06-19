@@ -11,6 +11,7 @@ APP_PASSWORD in Streamlit Secrets.
 import base64
 import json
 import os
+import re
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -134,6 +135,25 @@ def save_partners(df: pd.DataFrame) -> None:
 
 # ── UI helpers ───────────────────────────────────────────────────────────────
 
+def _validate_company(
+    name: str,
+    url: str,
+    linkedin_url: str,
+    existing_names: "pd.Series",
+    original_name: str = "",
+) -> list[str]:
+    errors = []
+    if not name:
+        errors.append("Company name is required.")
+    elif name != original_name and name in existing_names.values:
+        errors.append(f"'{name}' is already in this list.")
+    if url and not re.match(r"https?://.+\..+", url):
+        errors.append("Website must start with http:// or https:// and be a valid URL.")
+    if linkedin_url and "linkedin.com/company/" not in linkedin_url:
+        errors.append("LinkedIn URL must be a LinkedIn company page (linkedin.com/company/…).")
+    return errors
+
+
 def _badge(label: str) -> str:
     bg, fg = CATEGORY_COLOURS.get(label, ("#f1f5f9", "#475569"))
     return (
@@ -144,6 +164,7 @@ def _badge(label: str) -> str:
 
 def _render_partner_tab(partner: str, df: pd.DataFrame) -> pd.DataFrame:
     partner_df = df[df["partner"] == partner].copy()
+    edit_key = f"edit_idx_{partner}"
 
     # ── Company list ────────────────────────────────────────────────────────
     if partner_df.empty:
@@ -164,7 +185,7 @@ def _render_partner_tab(partner: str, df: pd.DataFrame) -> pd.DataFrame:
             )
 
             for orig_idx, row in cat_rows.iterrows():
-                c1, c2, c3, c4 = st.columns([3, 3, 3, 1])
+                c1, c2, c3, c4, c5 = st.columns([3, 2.5, 2.5, 1, 1])
 
                 display = row["name"]
                 if row.get("search_name"):
@@ -181,11 +202,76 @@ def _render_partner_tab(partner: str, df: pd.DataFrame) -> pd.DataFrame:
                 else:
                     c3.markdown("—")
 
-                if c4.button("Remove", key=f"rm_{orig_idx}", help=f"Remove {row['name']}"):
+                if c4.button("Edit", key=f"edit_{orig_idx}", help=f"Edit {row['name']}"):
+                    st.session_state[edit_key] = orig_idx
+                    st.rerun()
+
+                if c5.button("Remove", key=f"rm_{orig_idx}", help=f"Remove {row['name']}"):
+                    if st.session_state.get(edit_key) == orig_idx:
+                        st.session_state[edit_key] = None
                     df = df.drop(orig_idx).reset_index(drop=True)
                     save(df)
                     st.toast(f"{row['name']} removed.", icon="🗑️")
                     st.rerun()
+
+    # ── Edit form ────────────────────────────────────────────────────────────
+    editing_idx = st.session_state.get(edit_key)
+    if editing_idx is not None and editing_idx in df.index:
+        row = df.loc[editing_idx]
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown(
+            f"<div style='background:#fffbeb; border:1px solid #fbbf24; border-radius:8px;"
+            f" padding:16px 20px 4px; margin-bottom:8px;'>"
+            f"<span style='font-size:13px; font-weight:700; color:#92400e;'>"
+            f"✏️  Editing: {row['name']}</span></div>",
+            unsafe_allow_html=True,
+        )
+        with st.form(key=f"edit_form_{partner}"):
+            c1, c2 = st.columns(2)
+            with c1:
+                e_name = st.text_input("Company name *", value=row["name"])
+                e_url = st.text_input("Website", value=row.get("url", ""))
+                e_cat = st.selectbox(
+                    "Category", CATEGORIES,
+                    index=CATEGORIES.index(row["owner"]) if row["owner"] in CATEGORIES else 0,
+                )
+            with c2:
+                e_linkedin = st.text_input("LinkedIn URL", value=row.get("linkedin_url", ""))
+                e_search = st.text_input(
+                    "Search name",
+                    value=row.get("search_name", ""),
+                    help=(
+                        "Only needed if the company name is ambiguous. "
+                        "E.g. 'GCP' → 'Growth Capital Partners'."
+                    ),
+                )
+
+            cs, cc = st.columns(2)
+            save_clicked = cs.form_submit_button("Save changes", type="primary", use_container_width=True)
+            cancel_clicked = cc.form_submit_button("Cancel", use_container_width=True)
+
+            if save_clicked:
+                errors = _validate_company(
+                    e_name.strip(), e_url.strip(), e_linkedin.strip(),
+                    partner_df["name"], original_name=row["name"],
+                )
+                if errors:
+                    for err in errors:
+                        st.error(err)
+                else:
+                    df.at[editing_idx, "name"] = e_name.strip()
+                    df.at[editing_idx, "url"] = e_url.strip()
+                    df.at[editing_idx, "owner"] = e_cat
+                    df.at[editing_idx, "linkedin_url"] = e_linkedin.strip()
+                    df.at[editing_idx, "search_name"] = e_search.strip()
+                    save(df)
+                    st.session_state[edit_key] = None
+                    st.toast(f"{e_name.strip()} updated.", icon="✅")
+                    st.rerun()
+
+            if cancel_clicked:
+                st.session_state[edit_key] = None
+                st.rerun()
 
     # ── Add company form ─────────────────────────────────────────────────────
     st.markdown("<br>", unsafe_allow_html=True)
@@ -260,14 +346,16 @@ def _render_partner_tab(partner: str, df: pd.DataFrame) -> pd.DataFrame:
                 )
 
                 if submitted:
-                    name = new_name.strip()
-                    if not name:
-                        st.error("Company name is required.")
-                    elif name in partner_df["name"].values:
-                        st.error(f"'{name}' is already in {partner}'s list.")
+                    errors = _validate_company(
+                        new_name.strip(), new_url.strip(), new_linkedin.strip(),
+                        partner_df["name"],
+                    )
+                    if errors:
+                        for err in errors:
+                            st.error(err)
                     else:
                         new_row = {
-                            "name": name,
+                            "name": new_name.strip(),
                             "url": new_url.strip(),
                             "owner": new_cat,
                             "linkedin_url": new_linkedin.strip(),
@@ -278,7 +366,7 @@ def _render_partner_tab(partner: str, df: pd.DataFrame) -> pd.DataFrame:
                             [df, pd.DataFrame([new_row])], ignore_index=True
                         )
                         save(df)
-                        st.toast(f"{name} added to {partner}.", icon="✅")
+                        st.toast(f"{new_name.strip()} added to {partner}.", icon="✅")
                         st.rerun()
 
     return df
