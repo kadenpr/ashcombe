@@ -190,51 +190,96 @@ def _render_partner_tab(partner: str, df: pd.DataFrame) -> pd.DataFrame:
     # ── Add company form ─────────────────────────────────────────────────────
     st.markdown("<br>", unsafe_allow_html=True)
     with st.expander(f"➕  Add a company to {partner}", expanded=partner_df.empty):
-        with st.form(key=f"add_{partner}", clear_on_submit=True):
-            c1, c2 = st.columns(2)
-            with c1:
-                new_name = st.text_input("Company name *", placeholder="e.g. Acme Corp")
-                new_url = st.text_input("Website", placeholder="https://acmecorp.com")
-                new_cat = st.selectbox("Category", CATEGORIES)
-            with c2:
-                new_linkedin = st.text_input(
-                    "LinkedIn URL", placeholder="https://linkedin.com/company/acme/"
-                )
-                new_search = st.text_input(
-                    "Search name",
-                    placeholder="Leave blank if same as company name",
-                    help=(
-                        "Only needed if the company name is ambiguous. "
-                        "E.g. 'GCP' → 'Growth Capital Partners'. "
-                        "This is what gets sent to Google News."
-                    ),
-                )
+        mode = st.radio(
+            "mode",
+            ["New company", "From existing list"],
+            horizontal=True,
+            label_visibility="collapsed",
+            key=f"mode_{partner}",
+        )
 
-            submitted = st.form_submit_button(
-                "Add company", type="primary", use_container_width=True
+        if mode == "From existing list":
+            already_here = set(partner_df["name"].tolist())
+            candidates = (
+                df[~df["name"].isin(already_here)]
+                .drop_duplicates(subset="name")
+                .sort_values("name")
             )
+            if candidates.empty:
+                st.info("All tracked companies are already in this list.")
+            else:
+                c1, c2 = st.columns([3, 1])
+                selected_name = c1.selectbox(
+                    "Company", candidates["name"].tolist(), key=f"pick_{partner}"
+                )
+                pick_cat = c2.selectbox("Category", CATEGORIES, key=f"pickcat_{partner}")
 
-            if submitted:
-                name = new_name.strip()
-                if not name:
-                    st.error("Company name is required.")
-                elif name in df["name"].values:
-                    st.error(f"'{name}' is already in the tracker.")
-                else:
+                source = candidates[candidates["name"] == selected_name].iloc[0]
+                st.caption(
+                    f"Website: {source['url'] or '—'}   ·   "
+                    f"LinkedIn: {source['linkedin_url'] or '—'}"
+                )
+
+                if st.button("Add to list", type="primary", use_container_width=True, key=f"addexisting_{partner}"):
                     new_row = {
-                        "name": name,
-                        "url": new_url.strip(),
-                        "owner": new_cat,
-                        "linkedin_url": new_linkedin.strip(),
-                        "search_name": new_search.strip(),
+                        "name": source["name"],
+                        "url": source["url"],
+                        "owner": pick_cat,
+                        "linkedin_url": source["linkedin_url"],
+                        "search_name": source["search_name"],
                         "partner": partner,
                     }
-                    df = pd.concat(
-                        [df, pd.DataFrame([new_row])], ignore_index=True
-                    )
+                    df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
                     save(df)
-                    st.toast(f"{name} added to {partner}.", icon="✅")
+                    st.toast(f"{selected_name} added to {partner}.", icon="✅")
                     st.rerun()
+
+        else:
+            with st.form(key=f"add_{partner}", clear_on_submit=True):
+                c1, c2 = st.columns(2)
+                with c1:
+                    new_name = st.text_input("Company name *", placeholder="e.g. Acme Corp")
+                    new_url = st.text_input("Website", placeholder="https://acmecorp.com")
+                    new_cat = st.selectbox("Category", CATEGORIES)
+                with c2:
+                    new_linkedin = st.text_input(
+                        "LinkedIn URL", placeholder="https://linkedin.com/company/acme/"
+                    )
+                    new_search = st.text_input(
+                        "Search name",
+                        placeholder="Leave blank if same as company name",
+                        help=(
+                            "Only needed if the company name is ambiguous. "
+                            "E.g. 'GCP' → 'Growth Capital Partners'. "
+                            "This is what gets sent to Google News."
+                        ),
+                    )
+
+                submitted = st.form_submit_button(
+                    "Add company", type="primary", use_container_width=True
+                )
+
+                if submitted:
+                    name = new_name.strip()
+                    if not name:
+                        st.error("Company name is required.")
+                    elif name in partner_df["name"].values:
+                        st.error(f"'{name}' is already in {partner}'s list.")
+                    else:
+                        new_row = {
+                            "name": name,
+                            "url": new_url.strip(),
+                            "owner": new_cat,
+                            "linkedin_url": new_linkedin.strip(),
+                            "search_name": new_search.strip(),
+                            "partner": partner,
+                        }
+                        df = pd.concat(
+                            [df, pd.DataFrame([new_row])], ignore_index=True
+                        )
+                        save(df)
+                        st.toast(f"{name} added to {partner}.", icon="✅")
+                        st.rerun()
 
     return df
 
