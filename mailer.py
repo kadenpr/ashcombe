@@ -173,6 +173,8 @@ def send_digest(
     profile_changes: list | None = None,
     jobs_changes: list | None = None,
     company_owners: dict | None = None,
+    recipient: str | None = None,
+    partner_name: str | None = None,
 ) -> str:
     """
     Render the digest and (unless dry_run) send it.
@@ -198,14 +200,15 @@ def send_digest(
     subject = f"Ashcombe News Digest — {run_dt_uk.strftime('%d %b %Y')}"
 
     if dry_run:
-        logger.info("[DRY RUN] Would send: %s", subject)
+        label = f" ({partner_name})" if partner_name else ""
+        logger.info("[DRY RUN] Would send: %s%s", subject, label)
         print("\n" + "=" * 72)
-        print(f"[DRY RUN] Subject: {subject}")
+        print(f"[DRY RUN] Subject: {subject}{label}")
         print(f"[DRY RUN] HTML length: {len(html):,} chars")
         print("=" * 72)
         return html
 
-    recipient = os.environ["RECIPIENT_EMAIL"]
+    recipient = recipient or os.environ["RECIPIENT_EMAIL"]
     sender = os.environ["SENDER_EMAIL"]
     sendgrid_key = os.environ.get("SENDGRID_API_KEY", "")
 
