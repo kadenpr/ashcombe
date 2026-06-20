@@ -375,9 +375,9 @@ def _render_partner_tab(partner: str, df: pd.DataFrame) -> pd.DataFrame:
 def _render_settings_tab() -> None:
     st.markdown(
         "<div style='font-size:16px; font-weight:700; color:#0d1b3e;"
-        " margin-bottom:4px;'>Partner Email Addresses</div>"
+        " margin-bottom:4px;'>Employee Email Addresses</div>"
         "<div style='font-size:13px; color:#6b7280; margin-bottom:20px;'>"
-        "Set the email address each partner's digest is sent to.</div>",
+        "Set the email address each employee's digest is sent to.</div>",
         unsafe_allow_html=True,
     )
 
