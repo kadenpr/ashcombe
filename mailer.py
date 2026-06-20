@@ -79,6 +79,7 @@ def _render_html(
         jobs_changes=jobs_changes or [],
         company_owners=company_owners or {},
         category_counts=category_counts,
+        ui_url=os.environ.get("UI_URL", ""),
     )
 
     # Inline CSS for maximum email client compatibility

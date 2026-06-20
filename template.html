@@ -202,6 +202,15 @@
         {% if jobs_changes %}&nbsp;·&nbsp;{{ jobs_changes | length }} hiring change{{ 's' if jobs_changes | length != 1 }}{% endif %}
         {% if profile_changes %}&nbsp;·&nbsp;{{ profile_changes | length }} profile change{{ 's' if profile_changes | length != 1 }}{% endif %}
       </div>
+      {% if ui_url %}
+      <div style="margin-top:10px;">
+        <a href="{{ ui_url }}" target="_blank"
+           style="display:inline-block; background:#1a6dc5; color:#ffffff; font-size:12px;
+                  font-weight:600; padding:6px 16px; border-radius:5px; text-decoration:none;">
+          Manage companies →
+        </a>
+      </div>
+      {% endif %}
       <div class="footer-brand">
         Powered by Anthropic Claude &amp; Ashcombe Advisers internal tooling.
         This digest is generated automatically — please do not reply to this email.
