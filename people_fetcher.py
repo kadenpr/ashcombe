@@ -15,12 +15,11 @@ from __future__ import annotations
 import csv
 import logging
 import os
-import re
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
 
 from fetcher import NewsItem
+from utils import normalise_url, parse_posted_ago
 
 logger = logging.getLogger(__name__)
 
@@ -29,31 +28,6 @@ MAX_POSTS_PER_PERSON = 3
 ACTOR_TIMEOUT_SECS = 600
 PEOPLE_FILE = Path("people.csv")
 
-
-def _normalise_url(url: str) -> str:
-    return url.rstrip("/").lower()
-
-
-def _parse_posted_ago(posted_ago: str, now: datetime) -> Optional[datetime]:
-    """Convert LinkedIn's relative 'postedAgo' string to an approximate datetime."""
-    if not posted_ago:
-        return None
-    s = posted_ago.strip().lower()
-    match = re.match(r"(\d+)\s*(h|d|w|mo|yr|y)", s)
-    if not match:
-        return None
-    n, unit = int(match.group(1)), match.group(2)
-    if unit == "h":
-        return now - timedelta(hours=n)
-    if unit == "d":
-        return now - timedelta(hours=max(1, n * 24 - 12))
-    if unit == "w":
-        return now - timedelta(weeks=n)
-    if unit == "mo":
-        return now - timedelta(days=n * 30)
-    if unit in ("yr", "y"):
-        return now - timedelta(days=n * 365)
-    return None
 
 
 def _load_people() -> list[dict]:
@@ -95,7 +69,7 @@ def fetch_people_posts(
 
     # Build URL → person mapping
     url_to_person: dict[str, dict] = {
-        _normalise_url(p["linkedin_url"]): p
+        normalise_url(p["linkedin_url"]): p
         for p in people
     }
     profile_urls = [p["linkedin_url"].strip() for p in people]
@@ -127,12 +101,12 @@ def fetch_people_posts(
     for raw in client.dataset(run["defaultDatasetId"]).iterate_items():
         # Resolve which person this post belongs to via the input URL
         input_url = raw.get("input") or raw.get("profileUrl") or raw.get("profile_url") or ""
-        person = url_to_person.get(_normalise_url(input_url))
+        person = url_to_person.get(normalise_url(input_url))
         if not person:
             logger.debug("Could not map post to a person: %s", input_url)
             continue
 
-        published = _parse_posted_ago(raw.get("postedAgo", ""), now)
+        published = parse_posted_ago(raw.get("postedAgo", ""), now)
         if published is None:
             logger.debug("Post from %s has no parseable date — skipping", person["name"])
             continue

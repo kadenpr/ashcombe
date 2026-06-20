@@ -11,11 +11,13 @@ from __future__ import annotations
 import json
 import logging
 import os
-import re
+from collections import defaultdict
 from dataclasses import dataclass
 from typing import Optional
 
 import anthropic
+
+from utils import strip_json_fences
 
 logger = logging.getLogger(__name__)
 
@@ -108,22 +110,6 @@ class SummaryResult:
     category: str
 
 
-def _parse_response(text: str) -> SummaryResult:
-    """Extract JSON from the model response, tolerating minor formatting noise."""
-    text = re.sub(r"```(?:json)?", "", text).strip()
-    try:
-        data = json.loads(text)
-        return SummaryResult(
-            relevant=bool(data.get("relevant", False)),
-            secondary=bool(data.get("secondary", False)),
-            summary=str(data.get("summary", "")).strip(),
-            category=str(data.get("category", "")).strip(),
-        )
-    except json.JSONDecodeError as exc:
-        logger.warning("Failed to parse model response as JSON: %s\nRaw: %s", exc, text)
-        return SummaryResult(relevant=False, secondary=False, summary="", category="")
-
-
 class Summariser:
     """
     Wraps the Anthropic client to classify and summarise news items.
@@ -180,7 +166,7 @@ class Summariser:
                 messages=[{"role": "user", "content": user_content}],
             )
             raw = response.content[0].text
-            raw = re.sub(r"```(?:json)?", "", raw).strip()
+            raw = strip_json_fences(raw)
 
             # Try direct parse first, then extract array-of-objects specifically.
             # The tighter pattern avoids capturing stray [Note: ...] text that
@@ -231,8 +217,6 @@ class Summariser:
         Classify items grouped by company — one API call per company.
         Returns a list of (item, SummaryResult) tuples in the original order.
         """
-        from collections import defaultdict
-
         # Group preserving original indices
         groups: dict[str, list[tuple[int, dict]]] = defaultdict(list)
         for i, item in enumerate(items):
@@ -311,7 +295,7 @@ class Summariser:
                 ],
                 messages=[{"role": "user", "content": user_content}],
             )
-            raw = re.sub(r"```(?:json)?", "", response.content[0].text).strip()
+            raw = strip_json_fences(response.content[0].text)
             data = json.loads(raw)
             return str(data.get("summary", "")).strip()
         except Exception as exc:
@@ -355,7 +339,7 @@ class Summariser:
                 ],
                 messages=[{"role": "user", "content": user_content}],
             )
-            raw = re.sub(r"```(?:json)?", "", response.content[0].text).strip()
+            raw = strip_json_fences(response.content[0].text)
             data = json.loads(raw)
             return str(data.get("evaluation", "")).strip()
         except Exception as exc:
@@ -389,7 +373,7 @@ class Summariser:
                 ],
                 messages=[{"role": "user", "content": user_content}],
             )
-            raw = re.sub(r"```(?:json)?", "", response.content[0].text).strip()
+            raw = strip_json_fences(response.content[0].text)
             data = json.loads(raw)
             return str(data.get("evaluation", "")).strip()
         except Exception as exc:

@@ -9,6 +9,8 @@ APP_PASSWORD in Streamlit Secrets.
 """
 
 import base64
+import hmac
+import html
 import json
 import os
 import re
@@ -64,7 +66,7 @@ def require_auth() -> None:
         pwd = st.text_input("Password", type="password", label_visibility="collapsed",
                             placeholder="Enter password")
         if st.button("Sign in", type="primary", use_container_width=True):
-            if pwd == _get_password():
+            if hmac.compare_digest(pwd, _get_password()):
                 st.session_state.authenticated = True
                 st.rerun()
             else:
@@ -106,8 +108,10 @@ def _push_to_github(csv_content: str, path: str) -> None:
         }).encode()
         req = urllib.request.Request(api_url, data=payload, headers=headers, method="PUT")
         urllib.request.urlopen(req)
-    except Exception as exc:
-        st.warning(f"Changes saved locally but GitHub sync failed: {exc}")
+    except urllib.error.HTTPError as exc:
+        st.warning(f"GitHub sync failed: HTTP {exc.code} — check your GITHUB_TOKEN secret.")
+    except Exception:
+        st.warning("GitHub sync failed — changes saved locally only.")
 
 
 def save(df: pd.DataFrame) -> None:
@@ -135,6 +139,11 @@ def save_partners(df: pd.DataFrame) -> None:
 
 # ── UI helpers ───────────────────────────────────────────────────────────────
 
+def _safe_url(url: str) -> str:
+    """Return url only if it uses http/https; otherwise empty string."""
+    return url if re.match(r"https?://", url) else ""
+
+
 def _validate_company(
     name: str,
     url: str,
@@ -153,13 +162,6 @@ def _validate_company(
         errors.append("LinkedIn URL must be a LinkedIn company page (linkedin.com/company/…).")
     return errors
 
-
-def _badge(label: str) -> str:
-    bg, fg = CATEGORY_COLOURS.get(label, ("#f1f5f9", "#475569"))
-    return (
-        f"<span style='background:{bg}; color:{fg}; font-size:11px; font-weight:600;"
-        f" padding:2px 9px; border-radius:12px; margin-left:6px;'>{label}</span>"
-    )
 
 
 def _render_partner_tab(partner: str, df: pd.DataFrame) -> pd.DataFrame:
@@ -192,15 +194,11 @@ def _render_partner_tab(partner: str, df: pd.DataFrame) -> pd.DataFrame:
                     display += f"  *(searches as: {row['search_name']})*"
                 c1.markdown(f"**{display}**")
 
-                if row.get("url"):
-                    c2.markdown(f"[{row['url']}]({row['url']})")
-                else:
-                    c2.markdown("—")
+                safe_web = _safe_url(row.get("url", ""))
+                c2.markdown(f"[{safe_web}]({safe_web})" if safe_web else "—")
 
-                if row.get("linkedin_url"):
-                    c3.markdown(f"[LinkedIn ↗]({row['linkedin_url']})")
-                else:
-                    c3.markdown("—")
+                safe_li = _safe_url(row.get("linkedin_url", ""))
+                c3.markdown(f"[LinkedIn ↗]({safe_li})" if safe_li else "—")
 
                 if c4.button("Edit", key=f"edit_{orig_idx}", help=f"Edit {row['name']}"):
                     st.session_state[edit_key] = orig_idx
@@ -223,7 +221,7 @@ def _render_partner_tab(partner: str, df: pd.DataFrame) -> pd.DataFrame:
             f"<div style='background:#fffbeb; border:1px solid #fbbf24; border-radius:8px;"
             f" padding:16px 20px 4px; margin-bottom:8px;'>"
             f"<span style='font-size:13px; font-weight:700; color:#92400e;'>"
-            f"✏️  Editing: {row['name']}</span></div>",
+            f"✏️  Editing: {html.escape(row['name'])}</span></div>",
             unsafe_allow_html=True,
         )
         with st.form(key=f"edit_form_{partner}"):

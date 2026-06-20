@@ -11,6 +11,8 @@ import logging
 import os
 from dataclasses import dataclass, field
 
+from utils import normalise_url
+
 logger = logging.getLogger(__name__)
 
 ACTOR_ID = "datadoping/linkedin-company-scraper"
@@ -37,9 +39,6 @@ class ProfileChange:
     new_value:  str
     evaluation: str = field(default="")   # filled in by Summariser after fetch
 
-
-def _normalise_url(url: str) -> str:
-    return url.rstrip("/").lower()
 
 
 def fetch_profile_changes(
@@ -74,7 +73,7 @@ def fetch_profile_changes(
         return [], stored_profiles
 
     url_to_name: dict[str, str] = {
-        _normalise_url(c["linkedin_url"]): c["name"]
+        normalise_url(c["linkedin_url"]): c["name"]
         for c in companies
         if c.get("linkedin_url", "").strip()
     }
@@ -99,7 +98,7 @@ def fetch_profile_changes(
     updated_profiles = dict(stored_profiles)
 
     for item in client.dataset(run["defaultDatasetId"]).iterate_items():
-        input_url = _normalise_url(item.get("input", ""))
+        input_url = normalise_url(item.get("input", ""))
         company_name = url_to_name.get(input_url)
         if not company_name:
             continue

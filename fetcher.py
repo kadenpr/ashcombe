@@ -9,28 +9,25 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import ssl
 import time
 import urllib.parse
+import urllib.request
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from typing import Optional
-
-import ssl
 
 import certifi
 import feedparser
 
 logger = logging.getLogger(__name__)
 
-# Ensure feedparser uses the certifi CA bundle on macOS / systems with no
-# system CA store configured for Python.
 _SSL_CONTEXT = ssl.create_default_context(cafile=certifi.where())
 
 
 def _feedparser_parse(url: str) -> feedparser.FeedParserDict:
     """Parse an RSS URL using a certifi-backed SSL context."""
-    import urllib.request
     handler = urllib.request.HTTPSHandler(context=_SSL_CONTEXT)
     opener = urllib.request.build_opener(handler)
     with opener.open(url, timeout=20) as resp:

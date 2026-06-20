@@ -9,11 +9,10 @@ from __future__ import annotations
 
 import logging
 import os
-import re
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import datetime, timezone
 
 from fetcher import NewsItem
+from utils import normalise_url, parse_posted_ago
 
 logger = logging.getLogger(__name__)
 
@@ -21,36 +20,6 @@ ACTOR_ID = "datadoping/linkedin-company-posts-scraper"
 MAX_POSTS_PER_COMPANY = 5
 ACTOR_TIMEOUT_SECS = 600
 
-
-def _normalise_url(url: str) -> str:
-    return url.rstrip("/").lower()
-
-
-def _parse_posted_ago(posted_ago: str, now: datetime) -> Optional[datetime]:
-    """
-    Convert LinkedIn's relative 'postedAgo' string to an approximate datetime.
-    Examples: '3d', '2w', '5h', '1mo', '2yr'
-    We use the most recent possible interpretation so recent posts aren't filtered out.
-    """
-    if not posted_ago:
-        return None
-    s = posted_ago.strip().lower()
-    match = re.match(r"(\d+)\s*(h|d|w|mo|yr|y)", s)
-    if not match:
-        return None
-    n, unit = int(match.group(1)), match.group(2)
-    if unit == "h":
-        return now - timedelta(hours=n)
-    if unit == "d":
-        # "1d" means 24-47h ago; use 12h per day so "1d" posts always pass a 24h window
-        return now - timedelta(hours=max(1, n * 24 - 12))
-    if unit == "w":
-        return now - timedelta(weeks=n)
-    if unit == "mo":
-        return now - timedelta(days=n * 30)
-    if unit in ("yr", "y"):
-        return now - timedelta(days=n * 365)
-    return None
 
 
 def fetch_linkedin_posts(
@@ -81,7 +50,7 @@ def fetch_linkedin_posts(
         linkedin_url = company.get("linkedin_url", "").strip()
         if not linkedin_url:
             continue
-        url_to_company[_normalise_url(linkedin_url)] = company["name"]
+        url_to_company[normalise_url(linkedin_url)] = company["name"]
         company_urls.append(linkedin_url)
 
     if not company_urls:
@@ -115,13 +84,13 @@ def fetch_linkedin_posts(
     for raw in client.dataset(run["defaultDatasetId"]).iterate_items():
         # Map back to company using the input URL field
         input_url = raw.get("input", "")
-        company_name = url_to_company.get(_normalise_url(input_url))
+        company_name = url_to_company.get(normalise_url(input_url))
         if not company_name:
             logger.debug("Could not map LinkedIn post to company: %s", input_url)
             continue
 
         # Parse relative date
-        published = _parse_posted_ago(raw.get("postedAgo", ""), now)
+        published = parse_posted_ago(raw.get("postedAgo", ""), now)
         if published is None:
             logger.debug("LinkedIn post has no parseable date — skipping")
             continue

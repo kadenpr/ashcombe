@@ -7,10 +7,15 @@ client compatibility), then sends via SendGrid with SMTP fallback.
 
 from __future__ import annotations
 
+import certifi
+import json as _json
 import logging
 import os
 import smtplib
 import ssl
+import urllib.error
+import urllib.request
+from collections import Counter, OrderedDict
 from datetime import datetime, timezone
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -40,8 +45,6 @@ def _render_html(
     Render the Jinja2 HTML template, then inline all CSS via premailer
     so styles survive webmail clients that strip <style> blocks.
     """
-    from collections import Counter
-
     env = Environment(
         loader=FileSystemLoader(template_dir),
         autoescape=select_autoescape(["html"]),
@@ -51,7 +54,6 @@ def _render_html(
     run_dt_uk = run_dt.astimezone(UK_TZ)
 
     # Merge tier 1 and tier 2 into one ordered dict per company (tier 1 first)
-    from collections import OrderedDict
     combined: dict[str, list] = OrderedDict()
     for company, items in companies.items():
         combined.setdefault(company, []).extend(items)
@@ -96,12 +98,6 @@ def _send_sendgrid(
     api_key: str,
 ) -> None:
     """Send via SendGrid Web API (no extra SDK required — plain HTTP)."""
-    import ssl
-    import urllib.error
-    import urllib.request
-    import json as _json
-    import certifi
-
     recipients = [r.strip() for r in recipient.split(",") if r.strip()]
     payload = _json.dumps({
         "personalizations": [{"to": [{"email": r} for r in recipients]}],
