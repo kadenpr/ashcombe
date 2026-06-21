@@ -199,11 +199,11 @@ def _render_partner_tab(partner: str, df: pd.DataFrame) -> pd.DataFrame:
                 safe_li = _safe_url(row.get("linkedin_url", ""))
                 c3.markdown(f"[LinkedIn ↗]({safe_li})" if safe_li else "—")
 
-                if c4.button("Edit", key=f"edit_{orig_idx}", help=f"Edit {row['name']}"):
+                if c4.button("Edit", key=f"edit_{partner}_{orig_idx}", help=f"Edit {row['name']}"):
                     st.session_state[edit_key] = orig_idx
                     st.rerun()
 
-                if c5.button("Remove", key=f"rm_{orig_idx}", help=f"Remove {row['name']}"):
+                if c5.button("Remove", key=f"rm_{partner}_{orig_idx}", help=f"Remove {row['name']}"):
                     if st.session_state.get(edit_key) == orig_idx:
                         st.session_state[edit_key] = None
                     remaining = [p for p in row["partner"].split("|") if p != partner]
