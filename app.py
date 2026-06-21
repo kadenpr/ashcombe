@@ -164,7 +164,7 @@ def _validate_company(
 
 
 def _render_partner_tab(partner: str, df: pd.DataFrame) -> pd.DataFrame:
-    partner_df = df[df["partner"] == partner].copy()
+    partner_df = df[df["partner"].apply(lambda x: partner in x.split("|"))].copy()
     edit_key = f"edit_idx_{partner}"
 
     # ── Company list ────────────────────────────────────────────────────────
@@ -206,9 +206,13 @@ def _render_partner_tab(partner: str, df: pd.DataFrame) -> pd.DataFrame:
                 if c5.button("Remove", key=f"rm_{orig_idx}", help=f"Remove {row['name']}"):
                     if st.session_state.get(edit_key) == orig_idx:
                         st.session_state[edit_key] = None
-                    df = df.drop(orig_idx).reset_index(drop=True)
+                    remaining = [p for p in row["partner"].split("|") if p != partner]
+                    if remaining:
+                        df.at[orig_idx, "partner"] = "|".join(remaining)
+                    else:
+                        df = df.drop(orig_idx).reset_index(drop=True)
                     save(df)
-                    st.toast(f"{row['name']} removed.", icon="🗑️")
+                    st.toast(f"{row['name']} removed from {partner}.", icon="🗑️")
                     st.rerun()
 
     # ── Edit form ────────────────────────────────────────────────────────────
@@ -304,15 +308,12 @@ def _render_partner_tab(partner: str, df: pd.DataFrame) -> pd.DataFrame:
                 )
 
                 if st.button("Add to list", type="primary", use_container_width=True, key=f"addexisting_{partner}"):
-                    new_row = {
-                        "name": source["name"],
-                        "url": source["url"],
-                        "owner": pick_cat,
-                        "linkedin_url": source["linkedin_url"],
-                        "search_name": source["search_name"],
-                        "partner": partner,
-                    }
-                    df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+                    src_idx = df.index[df["name"] == selected_name][0]
+                    existing = [p for p in df.at[src_idx, "partner"].split("|") if p.strip()]
+                    if partner not in existing:
+                        existing.append(partner)
+                    df.at[src_idx, "partner"] = "|".join(existing)
+                    df.at[src_idx, "owner"] = pick_cat
                     save(df)
                     st.toast(f"{selected_name} added to {partner}.", icon="✅")
                     st.rerun()
@@ -445,10 +446,13 @@ def main() -> None:
 
     # ── Metrics row ──────────────────────────────────────────────────────────
     df = load()
-    mc = st.columns(len(PARTNERS) + 1)
-    mc[0].metric("Total companies", len(df))
+    total_tracked = int(df["partner"].apply(lambda x: bool(x.strip())).sum())
+    mc = st.columns(len(PARTNERS) + 2)
+    mc[0].metric("Tracked", total_tracked)
+    mc[1].metric("Stored", len(df))
     for i, p in enumerate(PARTNERS):
-        mc[i + 1].metric(p, len(df[df["partner"] == p]))
+        count = int(df["partner"].apply(lambda x: p in x.split("|")).sum())
+        mc[i + 2].metric(p, count)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
