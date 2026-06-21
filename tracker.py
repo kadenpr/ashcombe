@@ -83,7 +83,10 @@ def load_companies() -> list[dict]:
         logger.error("companies.csv not found")
         sys.exit(1)
     with open(COMPANIES_FILE, newline="", encoding="utf-8") as f:
-        return list(csv.DictReader(f))
+        all_companies = list(csv.DictReader(f))
+    active = [c for c in all_companies if c.get("partner", "").strip()]
+    logger.info("Loaded %d active companies (%d total in CSV)", len(active), len(all_companies))
+    return active
 
 
 

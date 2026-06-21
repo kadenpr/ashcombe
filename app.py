@@ -25,14 +25,13 @@ COMPANIES_FILE = Path(__file__).parent / "companies.csv"
 PARTNERS_FILE = Path(__file__).parent / "partners.csv"
 
 PARTNERS = ["Simon", "Marc", "Jack", "Diyar", "Murs", "Andreas", "Josh", "George"]
-CATEGORIES = ["Clients", "Targets", "Investors", "PTT", "Other"]
+CATEGORIES = ["Consumer", "PTT", "B2B & Tech", "FS"]
 
 CATEGORY_COLOURS = {
-    "Clients":   ("#dbeafe", "#1e40af"),
-    "Targets":   ("#dcfce7", "#166534"),
-    "Investors": ("#fef9c3", "#854d0e"),
+    "Consumer":  ("#dbeafe", "#1e40af"),
     "PTT":       ("#ede9fe", "#5b21b6"),
-    "Other":     ("#f1f5f9", "#475569"),
+    "B2B & Tech":("#dcfce7", "#166534"),
+    "FS":        ("#fef9c3", "#854d0e"),
 }
 
 
