@@ -179,7 +179,8 @@ def run(dry_run: bool = False) -> None:
 
     if total_fetched == 0 and not profile_changes and not jobs_changes:
         logger.info("No new items, profile changes, or jobs changes — exiting cleanly (no email sent)")
-        save_state(run_dt, seen_hashes, updated_profiles, updated_jobs)
+        if not dry_run:
+            save_state(run_dt, seen_hashes, updated_profiles, updated_jobs)
         sys.exit(0)
 
     # 4. Classify + evaluate with Anthropic
@@ -248,8 +249,9 @@ def run(dry_run: bool = False) -> None:
     # 5. Exit cleanly if nothing to report
     if total_relevant == 0 and total_secondary == 0 and not profile_changes and not jobs_changes:
         logger.info("No relevant items after filtering — exiting cleanly (no email sent)")
-        seen_hashes.update(new_hashes)
-        save_state(run_dt, seen_hashes, updated_profiles, updated_jobs)
+        if not dry_run:
+            seen_hashes.update(new_hashes)
+            save_state(run_dt, seen_hashes, updated_profiles, updated_jobs)
         sys.exit(0)
 
     # 6. Render and send per-partner digests
@@ -299,11 +301,17 @@ def run(dry_run: bool = False) -> None:
             )
             sent_count += 1
 
-        logger.info("Sent %d of %d partner digest(s)", sent_count, len(partners))
+        logger.info(
+            "%s %d of %d partner digest(s)",
+            "[DRY RUN] Would send" if dry_run else "Sent",
+            sent_count,
+            len(partners),
+        )
 
-    # 7. Persist state — update seen hashes AFTER successful send
-    seen_hashes.update(new_hashes)
-    save_state(run_dt, seen_hashes, updated_profiles, updated_jobs)
+    # 7. Persist state — update seen hashes AFTER successful send (skipped on dry-run)
+    if not dry_run:
+        seen_hashes.update(new_hashes)
+        save_state(run_dt, seen_hashes, updated_profiles, updated_jobs)
 
     logger.info(
         "=== Done — %d relevant items, %d profile change(s), %d jobs change(s) ===",
