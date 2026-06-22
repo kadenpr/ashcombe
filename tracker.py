@@ -89,6 +89,20 @@ def load_companies() -> list[dict]:
     return active
 
 
+def load_partners() -> dict[str, str]:
+    """Returns {name: email} from partners.csv, or empty dict if file not found."""
+    partners_file = Path("partners.csv")
+    if not partners_file.exists():
+        logger.warning("partners.csv not found — will fall back to RECIPIENT_EMAIL")
+        return {}
+    with open(partners_file, newline="", encoding="utf-8") as f:
+        return {
+            row["name"]: row["email"]
+            for row in csv.DictReader(f)
+            if row.get("name") and row.get("email")
+        }
+
+
 
 # ---------------------------------------------------------------------------
 # Core pipeline
@@ -238,25 +252,61 @@ def run(dry_run: bool = False) -> None:
         save_state(run_dt, seen_hashes, updated_profiles, updated_jobs)
         sys.exit(0)
 
-    # 6. Render and send digest
+    # 6. Render and send per-partner digests
     company_owners = {c["name"]: c.get("owner", "") for c in companies}
-    logger.info("--- Sending digest ---")
-    send_digest(
-        digest,
-        secondary_digest=secondary_digest,
-        profile_changes=profile_changes,
-        jobs_changes=jobs_changes,
-        company_owners=company_owners,
-        run_dt=run_dt,
-        dry_run=dry_run,
-    )
+    partners = load_partners()
+
+    if not partners:
+        # Fallback: send single digest to RECIPIENT_EMAIL
+        logger.info("--- Sending digest (single recipient fallback) ---")
+        send_digest(
+            digest,
+            secondary_digest=secondary_digest,
+            profile_changes=profile_changes,
+            jobs_changes=jobs_changes,
+            company_owners=company_owners,
+            run_dt=run_dt,
+            dry_run=dry_run,
+        )
+    else:
+        logger.info("--- Sending per-partner digests (%d partners) ---", len(partners))
+        sent_count = 0
+        for partner_name, partner_email in partners.items():
+            partner_cos = {
+                c["name"] for c in companies
+                if partner_name in c.get("partner", "").split("|")
+            }
+            p_digest = {k: v for k, v in digest.items() if k in partner_cos}
+            p_secondary = {k: v for k, v in secondary_digest.items() if k in partner_cos}
+            p_profiles = [c for c in profile_changes if c.company in partner_cos]
+            p_jobs = [c for c in jobs_changes if c.company in partner_cos]
+
+            if not p_digest and not p_secondary and not p_profiles and not p_jobs:
+                logger.info("No relevant news for %s — skipping", partner_name)
+                continue
+
+            logger.info("Sending digest to %s (%s)", partner_name, partner_email)
+            send_digest(
+                p_digest,
+                secondary_digest=p_secondary,
+                profile_changes=p_profiles,
+                jobs_changes=p_jobs,
+                company_owners=company_owners,
+                run_dt=run_dt,
+                dry_run=dry_run,
+                recipient=partner_email,
+                partner_name=partner_name,
+            )
+            sent_count += 1
+
+        logger.info("Sent %d of %d partner digest(s)", sent_count, len(partners))
 
     # 7. Persist state — update seen hashes AFTER successful send
     seen_hashes.update(new_hashes)
     save_state(run_dt, seen_hashes, updated_profiles, updated_jobs)
 
     logger.info(
-        "=== Done — %d relevant items, %d profile change(s), %d jobs change(s) sent ===",
+        "=== Done — %d relevant items, %d profile change(s), %d jobs change(s) ===",
         total_relevant,
         len(profile_changes),
         len(jobs_changes),
