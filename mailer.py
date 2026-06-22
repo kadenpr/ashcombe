@@ -97,11 +97,16 @@ def _send_sendgrid(
     sender: str,
     recipient: str,
     api_key: str,
+    bcc: str = "",
 ) -> None:
     """Send via SendGrid Web API (no extra SDK required — plain HTTP)."""
     recipients = [r.strip() for r in recipient.split(",") if r.strip()]
+    bcc_list = [b.strip() for b in bcc.split(",") if b.strip()] if bcc else []
+    personalization: dict = {"to": [{"email": r} for r in recipients]}
+    if bcc_list:
+        personalization["bcc"] = [{"email": b} for b in bcc_list]
     payload = _json.dumps({
-        "personalizations": [{"to": [{"email": r} for r in recipients]}],
+        "personalizations": [personalization],
         "from": {"email": sender},
         "subject": subject,
         "content": [{"type": "text/html", "value": html_body}],
@@ -134,6 +139,7 @@ def _send_smtp(
     subject: str,
     sender: str,
     recipient: str,
+    bcc: str = "",
 ) -> None:
     """
     SMTP fallback — uses SMTP_HOST / SMTP_PORT / SMTP_USER / SMTP_PASSWORD
@@ -145,10 +151,12 @@ def _send_smtp(
     password = os.environ.get("SMTP_PASSWORD", "")
 
     recipients = [r.strip() for r in recipient.split(",") if r.strip()]
+    bcc_list = [b.strip() for b in bcc.split(",") if b.strip()] if bcc else []
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = sender
     msg["To"] = ", ".join(recipients)
+    # BCC addresses are passed to sendmail but intentionally omitted from headers
     msg.attach(MIMEText(html_body, "html", "utf-8"))
 
     context = ssl.create_default_context()
@@ -156,7 +164,7 @@ def _send_smtp(
         server.ehlo()
         server.starttls(context=context)
         server.login(user, password)
-        server.sendmail(sender, recipients, msg.as_string())
+        server.sendmail(sender, recipients + bcc_list, msg.as_string())
 
     logger.info("Email sent via SMTP (%s:%s) to %s", host, port, recipient)
 
@@ -172,6 +180,7 @@ def send_digest(
     company_owners: dict | None = None,
     recipient: str | None = None,
     partner_name: str | None = None,
+    bcc: str = "",
 ) -> str:
     """
     Render the digest and (unless dry_run) send it.
@@ -210,10 +219,10 @@ def send_digest(
     sendgrid_key = os.environ.get("SENDGRID_API_KEY", "")
 
     if sendgrid_key:
-        _send_sendgrid(html, subject, sender, recipient, sendgrid_key)
+        _send_sendgrid(html, subject, sender, recipient, sendgrid_key, bcc=bcc)
     else:
         logger.info("SENDGRID_API_KEY not set — falling back to SMTP")
-        _send_smtp(html, subject, sender, recipient)
+        _send_smtp(html, subject, sender, recipient, bcc=bcc)
 
     return html
 

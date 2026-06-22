@@ -40,6 +40,7 @@ STATE_FILE = Path("state.json")
 COMPANIES_FILE = Path("companies.csv")
 DEFAULT_LOOKBACK_HOURS = 24  # used on very first run only
 MAX_TIER1_PER_COMPANY = 3  # excess tier 1 items overflow to Also in Brief
+ADMIN_BCC = os.environ.get("ADMIN_EMAIL", "kadenross60@gmail.com")
 
 logger = logging.getLogger(__name__)
 
@@ -269,6 +270,7 @@ def run(dry_run: bool = False) -> None:
             company_owners=company_owners,
             run_dt=run_dt,
             dry_run=dry_run,
+            bcc=ADMIN_BCC,
         )
     else:
         logger.info("--- Sending per-partner digests (%d partners) ---", len(partners))
@@ -298,6 +300,7 @@ def run(dry_run: bool = False) -> None:
                 dry_run=dry_run,
                 recipient=partner_email,
                 partner_name=partner_name,
+                bcc=ADMIN_BCC,
             )
             sent_count += 1
 
