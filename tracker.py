@@ -129,6 +129,15 @@ def run(dry_run: bool = False) -> None:
     if last_run_raw:
         since = datetime.fromisoformat(last_run_raw).replace(tzinfo=timezone.utc)
         logger.info("Last run: %s", since.isoformat())
+        # Duplicate-send guard — skip if last successful send was within 2 hours
+        # (catches Pipedream retries or accidental double-triggers)
+        hours_since = (run_dt - since).total_seconds() / 3600
+        if hours_since < 2 and not dry_run:
+            logger.info(
+                "Last run was only %.0f minutes ago — skipping to prevent duplicate sends",
+                hours_since * 60,
+            )
+            sys.exit(0)
     else:
         since = run_dt - timedelta(hours=lookback_hours)
         logger.info("No previous run — using %dh lookback (%s)", lookback_hours, since.isoformat())
