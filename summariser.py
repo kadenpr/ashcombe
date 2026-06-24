@@ -65,12 +65,20 @@ with one object per item in the same order:
 
 BATCH_USER_TEMPLATE = """\
 Company: {company}{full_name_line}
+Industry: {industry}
 
 {items}
 
 Classify each item into tier 1, 2, or 3. Return a JSON array with {n} objects \
 in the same order.
 """
+
+INDUSTRY_LABELS = {
+    "Consumer": "Consumer brand",
+    "PTT": "Passenger transport technology",
+    "B2B & Tech": "B2B technology",
+    "FS": "Financial services",
+}
 
 # Default model — swap to claude-opus-4-6 for higher accuracy if budget allows
 DEFAULT_MODEL = "claude-haiku-4-5-20251001"
@@ -134,6 +142,7 @@ class Summariser:
         company: str,
         items: list[dict],
         search_name: str = "",
+        owner: str = "",
     ) -> list[SummaryResult]:
         """
         Classify all items for a single company in one API call.
@@ -144,9 +153,11 @@ class Summariser:
             for i, item in enumerate(items)
         )
         full_name_line = f" (full name: {search_name})" if search_name and search_name != company else ""
+        industry = INDUSTRY_LABELS.get(owner, owner) if owner else "Unknown"
         user_content = BATCH_USER_TEMPLATE.format(
             company=company,
             full_name_line=full_name_line,
+            industry=industry,
             items=lines,
             n=len(items),
         )
@@ -229,7 +240,8 @@ class Summariser:
             indices = [i for i, _ in indexed_items]
             company_items = [item for _, item in indexed_items]
             search_name = company_items[0].get("search_name", "") if company_items else ""
-            company_results = self._classify_company_batch(company, company_items, search_name=search_name)
+            owner = company_items[0].get("owner", "") if company_items else ""
+            company_results = self._classify_company_batch(company, company_items, search_name=search_name, owner=owner)
             for idx, result in zip(indices, company_results):
                 results[idx] = (items[idx], result)
 
