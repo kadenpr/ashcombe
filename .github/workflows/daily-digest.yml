@@ -8,6 +8,13 @@ on:
         type: boolean
         default: false
 
+# Serialise concurrent dispatches — if Pipedream fires twice, the second run
+# queues until the first finishes. It then reads today's state.json and the
+# "already ran today" guard in tracker.py exits it before sending any email.
+concurrency:
+  group: daily-digest
+  cancel-in-progress: false
+
 jobs:
   run-tracker:
     runs-on: ubuntu-latest
@@ -42,4 +49,5 @@ jobs:
           git config user.email "tracker@ashcombeadvisers.com"
           git add state.json
           git diff --staged --quiet || git commit -m "chore: update tracker state"
+          git pull --rebase origin main
           git push

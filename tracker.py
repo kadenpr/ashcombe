@@ -128,26 +128,23 @@ def run(dry_run: bool = False) -> None:
 
     if last_run_raw:
         since = datetime.fromisoformat(last_run_raw).replace(tzinfo=timezone.utc)
-        logger.info("Last run: %s", since.isoformat())
-        # Duplicate-send guard — skip if a run started within the last 2 hours.
-        # Checked BEFORE the early-write below so a retry sees the stamp and exits.
-        hours_since = (run_dt - since).total_seconds() / 3600
-        if hours_since < 2 and not dry_run:
+        since_uk = since.astimezone(UK_TZ)
+        run_uk = run_dt.astimezone(UK_TZ)
+        logger.info("Last run: %s UK", since_uk.strftime("%H:%M on %d %b %Y"))
+        # Duplicate-send guard — skip if tracker already ran today (UK calendar day).
+        # In GitHub Actions each run checks out state.json fresh from the repo, so
+        # the previous run must have successfully pushed state.json for this guard
+        # to fire. The concurrency group in daily-digest.yml serialises concurrent
+        # dispatches so the second run always starts after the first has pushed.
+        if since_uk.date() == run_uk.date() and not dry_run:
             logger.info(
-                "Last run was only %.0f minutes ago — skipping to prevent duplicate sends",
-                hours_since * 60,
+                "Already ran today at %s UK — skipping to prevent duplicate sends",
+                since_uk.strftime("%H:%M"),
             )
             sys.exit(0)
     else:
         since = run_dt - timedelta(hours=lookback_hours)
         logger.info("No previous run — using %dh lookback (%s)", lookback_hours, since.isoformat())
-
-    # Stamp run_dt into state.json immediately so any concurrent retry (e.g. a
-    # Pipedream HTTP timeout triggering a second request while this run is still
-    # in progress) will hit the 2-hour guard above and exit before doing any work.
-    if not dry_run:
-        save_state(run_dt, seen_hashes, company_profiles, company_jobs)
-        logger.info("Run timestamp written to state.json")
 
     # 2. Load companies
     companies = load_companies()
