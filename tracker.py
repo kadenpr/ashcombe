@@ -129,8 +129,8 @@ def run(dry_run: bool = False) -> None:
     if last_run_raw:
         since = datetime.fromisoformat(last_run_raw).replace(tzinfo=timezone.utc)
         logger.info("Last run: %s", since.isoformat())
-        # Duplicate-send guard — skip if last successful send was within 2 hours
-        # (catches Pipedream retries or accidental double-triggers)
+        # Duplicate-send guard — skip if a run started within the last 2 hours.
+        # Checked BEFORE the early-write below so a retry sees the stamp and exits.
         hours_since = (run_dt - since).total_seconds() / 3600
         if hours_since < 2 and not dry_run:
             logger.info(
@@ -141,6 +141,13 @@ def run(dry_run: bool = False) -> None:
     else:
         since = run_dt - timedelta(hours=lookback_hours)
         logger.info("No previous run — using %dh lookback (%s)", lookback_hours, since.isoformat())
+
+    # Stamp run_dt into state.json immediately so any concurrent retry (e.g. a
+    # Pipedream HTTP timeout triggering a second request while this run is still
+    # in progress) will hit the 2-hour guard above and exit before doing any work.
+    if not dry_run:
+        save_state(run_dt, seen_hashes, company_profiles, company_jobs)
+        logger.info("Run timestamp written to state.json")
 
     # 2. Load companies
     companies = load_companies()
